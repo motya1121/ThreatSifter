@@ -1,0 +1,38 @@
+[
+    {
+        "name": "All CISA Advisories",
+        "url": "http://www.us-cert.gov/channels/userdocs.rdf"
+    },
+    {
+        "name": "CISA News",
+        "url": "https://www.cisa.gov/cisa/news.xml"
+    },
+    {
+        "name": "Alerts",
+        "url": "http://www.us-cert.gov/current/index.rdf"
+    },
+    {
+        "name": "IPAセキュリティセンター:重要なセキュリティ情報",
+        "url": "https://www.ipa.go.jp/security/rss/alert.rdf"
+    },
+    {
+        "name": "情報セキュリティ新着情報RSS",
+        "url": "http://www.ipa.go.jp/security/rss/info.rdf"
+    },
+    {
+        "name": "MSRC Security Update Guide",
+        "url": "https://api.msrc.microsoft.com/update-guide/rss"
+    },
+    {
+        "name": "CISA Cybersecurity Advisories",
+        "url": "http://www.us-cert.gov/channels/techalerts.rdf"
+    },
+    {
+        "name": "JPCERT/CC お知らせ RSS",
+        "url": "http://www.jpcert.or.jp/rss/whatsnew.rdf"
+    },
+    {
+        "name": "NCSC Report Feed",
+        "url": "https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml"
+    }
+]

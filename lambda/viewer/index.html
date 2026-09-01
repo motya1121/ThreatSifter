@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Sifter Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --sidebar-bg: #111827;
+            --card-bg: rgba(31, 41, 55, 0.65);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-gray: #6b7280;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: #2563eb;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .login-error {
+            color: var(--accent-red);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* Main Layout */
+        #app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: var(--accent-red);
+            background: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Main Content */
+        .content {
+            flex-grow: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .content-header {
+            margin-bottom: 0.5rem;
+        }
+
+        .content-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .content-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: 100%;
+        }
+
+        .panel.active {
+            display: flex;
+        }
+
+        /* Grid */
+        .grid-kpi {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card-kpi {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .kpi-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Articles View Layout */
+        .articles-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.5rem;
+            flex-grow: 1;
+            min-height: 500px;
+            max-height: calc(100vh - 160px);
+        }
+
+        .list-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border-right: 1px solid var(--border-color);
+            padding-right: 1rem;
+            overflow-y: auto;
+        }
+
+        .detail-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            padding-left: 0.5rem;
+        }
+
+        /* Filter Controls */
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            gap: 1rem;
+            background: rgba(31, 41, 55, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .select-input {
+            width: 100%;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .select-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        /* Article Cards */
+        .article-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+            position: relative;
+        }
+
+        .article-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(31, 41, 55, 0.85);
+            transform: translateY(-2px);
+        }
+
+        .article-card.active {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-threat { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-clean { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-dropped { background: rgba(107, 114, 128, 0.15); color: var(--text-secondary); border: 1px solid rgba(107, 114, 128, 0.3); }
+        
+        .badge-read { color: var(--accent-green); }
+        .badge-unread { color: var(--accent-blue); }
+
+        /* Article Detail view */
+        .detail-placeholder {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 3rem;
+        }
+
+        .detail-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .detail-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .detail-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-meta-row a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .detail-meta-row a:hover {
+            text-decoration: underline;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-action {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .summary-box {
+            background: rgba(31, 41, 55, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            line-height: 1.6;
+        }
+
+        /* Tabs inside detail view */
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            gap: 1.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 0.25rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        .data-table th, .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .pre-json {
+            background: rgba(17, 24, 39, 0.9);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            max-height: 350px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            background: rgba(31, 41, 55, 0.95);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .toast-success { border-left: 4px solid var(--accent-green); }
+        .toast-error { border-left: 4px solid var(--accent-red); }
+
+        /* Site Management */
+        .card-management {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-toggle-active { background-color: var(--accent-yellow); }
+        .btn-recrawl { background-color: var(--accent-blue); }
+        .btn-delete { background-color: var(--accent-red); }
+
+        .btn-toggle-active.inactive { background-color: var(--accent-green); }
+
+        .grid-two-col {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .textarea-input {
+            width: 100%;
+            height: 100px;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            resize: none;
+        }
+
+        /* Details/Summary */
+        details[open] > summary > span:first-child {
+            transform: rotate(0deg);
+        }
+
+        details:not([open]) > summary > span:first-child {
+            transform: rotate(-90deg);
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Stats Chart Container */
+        .chart-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            height: 350px;
+            position: relative;
+        }
+
+        /* ==========================================================================
+           Mobile Responsiveness (スマートフォン対応)
+           ========================================================================== */
+        .mobile-header {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            #app-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                width: 100%;
+            }
+
+            /* 1. Mobile top fixed header */
+            .mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.85rem 1.25rem;
+                background-color: var(--sidebar-bg);
+                border-bottom: 1px solid var(--border-color);
+                width: 100%;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                height: 55px;
+            }
+            
+            .mobile-header-title {
+                font-weight: 700;
+                font-size: 1.1rem;
+                background: linear-gradient(to right, #60a5fa, #3b82f6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            /* 2. Transform Sidebar to Bottom Navigation Bar */
+            .sidebar {
+                width: 100%;
+                height: 65px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                padding: 0.25rem 0.5rem;
+                border-right: none;
+                border-top: 1px solid var(--border-color);
+                background-color: var(--sidebar-bg);
+            }
+
+            .sidebar-header, .logout-btn {
+                display: none !important;
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-around;
+                gap: 0;
+            }
+
+            .nav-item {
+                padding: 0.35rem;
+                flex-direction: column;
+                font-size: 0.65rem;
+                gap: 3px;
+                align-items: center;
+                color: var(--text-secondary);
+                flex: 1;
+                text-align: center;
+                border-radius: 6px;
+            }
+
+            .hide-on-mobile {
+                display: none !important;
+            }
+
+            .nav-icon {
+                margin-right: 0;
+                font-size: 1.25rem;
+                width: auto;
+            }
+
+            /* 3. Main Content responsive spacing */
+            .content {
+                padding: 1rem;
+                padding-bottom: 85px; /* bottom bar offset */
+                height: auto;
+                overflow-y: visible;
+                gap: 1rem;
+            }
+
+            .content-header {
+                margin-bottom: 0;
+            }
+
+            .content-title {
+                font-size: 1.4rem;
+            }
+
+            /* 4. Split pane responsive behavior */
+            .articles-container {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+                min-height: auto;
+                max-height: none;
+            }
+
+            .list-column {
+                border-right: none;
+                padding-right: 0;
+                overflow-y: visible;
+                max-height: none;
+            }
+
+            /* Hide PC detail column on mobile as we use dedicated page */
+            .detail-column {
+                display: none !important; 
+            }
+
+            /* 5. Filter Controls stacking */
+            .filter-row {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                padding: 0.85rem;
+            }
+
+            /* KPI Cards layout */
+            .grid-kpi {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .card-kpi {
+                padding: 1rem;
+            }
+
+            .kpi-value {
+                font-size: 1.75rem;
+            }
+
+            /* Card Management responsive */
+            .card-management {
+                padding: 1rem;
+            }
+
+            /* Summary box responsive */
+            .summary-box {
+                padding: 1rem;
+            }
+
+            /* Login Card responsive width */
+            .login-card {
+                margin: 1.5rem;
+                padding: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="login-icon">🕵️‍♂️</div>
+            <div class="login-title">Threat Sifter</div>
+            <div class="login-subtitle">Security intelligence Aggregator Dashboard</div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="password">Viewer Password</label>
+                    <input type="password" id="password" class="form-input" required placeholder="Enter password...">
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <div id="login-error" class="login-error">パスワードが間違っています。</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app-container">
+        <!-- Mobile Top Header (Visible only on screens <= 768px) -->
+        <div class="mobile-header">
+            <span class="mobile-header-title">🕵️‍♂️ Threat Sifter</span>
+            <button class="btn logout-btn-mobile" onclick="handleLogout()" style="width:auto; padding:0.4rem 0.8rem; background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); color: var(--accent-red)">Logout</button>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🕵️‍♂️</div>
+                <div>
+                    <div class="sidebar-title">Threat Sifter</div>
+                    <div class="sidebar-subtitle">Intelligence Aggregator</div>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" onclick="switchPanel('articles-panel', this)">
+                    <span class="nav-icon">📰</span> Articles (記事フィード)
+                </li>
+                <li class="nav-item" onclick="switchPanel('quick-panel', this)">
+                    <span class="nav-icon">⚡</span> Quick View (クイックプレビュー)
+                </li>
+                <li class="nav-item hide-on-mobile" onclick="switchPanel('search-panel', this)">
+                    <span class="nav-icon">🔍</span> Search (DB検索)
+                </li>
+                <li class="nav-item hide-on-mobile" onclick="switchPanel('site-panel', this)">
+                    <span class="nav-icon">⚙️</span> Site Config (サイト管理)
+                </li>
+                <li class="nav-item hide-on-mobile" onclick="switchPanel('submit-panel', this)">
+                    <span class="nav-icon">✉️</span> Manual Submit (手動登録)
+                </li>
+                <li class="nav-item hide-on-mobile" onclick="switchPanel('stats-panel', this)">
+                    <span class="nav-icon">📊</span> Statistics (統計情報)
+                </li>
+            </ul>
+            <button class="btn logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- 1. Articles Panel -->
+            <div id="articles-panel" class="panel active">
+                <div class="content-header">
+                    <h1 class="content-title">Threat intelligence feed</h1>
+                    <p class="content-subtitle">検出されたセキュリティ記事の確認および管理</p>
+                </div>
+                <div class="filter-row">
+                    <div>
+                        <label class="form-group"><span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary)">STATUS FILTER</span></label>
+                        <select id="filter-status" class="select-input" onchange="loadArticles()">
+                            <option value="All">All Statuses</option>
+                            <option value="THREAT_DETECTED">🔴 Threat Detected</option>
+                            <option value="ANALYSIS_EMPTY">🟢 Analysis Empty</option>
+                            <option value="TRIAGE_DROPPED">⚪ Triage Dropped</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-group"><span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary)">READ STATUS</span></label>
+                        <select id="filter-read" class="select-input" onchange="loadArticles()">
+                            <option value="Unread">🔵 Unread Only</option>
+                            <option value="Read">✅ Read Only</option>
+                            <option value="All">All Articles</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-group"><span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary)">KEYWORD SEARCH</span></label>
+                        <input type="text" id="search-query" class="form-input" style="padding: 0.5rem" placeholder="Search title or URL..." oninput="debounce(loadArticles)">
+                    </div>
+                </div>
+
+                <div class="articles-container">
+                    <!-- Left List column -->
+                    <div class="list-column" id="articles-list">
+                        <!-- Render cards via JS -->
+                    </div>
+                    <!-- Right Detail column -->
+                    <div class="detail-column" id="article-detail">
+                        <div class="detail-placeholder">
+                            <span style="font-size:2rem; margin-bottom: 0.5rem">👈</span>
+                            左側のリストから記事を選択して詳細を表示してください。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Site Configuration Panel -->
+            <div id="site-panel" class="panel">
+                <div class="content-header">
+                    <h1 class="content-title">RSS Feed Site Management</h1>
+                    <p class="content-subtitle">脅威情報の巡回先フィードの登録・編集</p>
+                </div>
+                <div class="grid-two-col">
+                    <div class="card-management">
+                        <h2 style="font-size:1.1rem; font-weight:600">登録済みフィード一覧</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>フィード名</th>
+                                    <th>URL</th>
+                                    <th>ステータス</th>
+                                    <th>最終確認日時</th>
+                                    <th>アクション</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sites-table-body">
+                                <!-- Render rows via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-management">
+                        <h2 style="font-size:1.1rem; font-weight:600">新規フィード登録</h2>
+                        <form id="add-site-form" onsubmit="handleRegisterSite(event)">
+                            <div class="form-group">
+                                <label for="site-name">サイト名/フィード名</label>
+                                <input type="text" id="site-name" class="form-input" required placeholder="e.g. JPCERT RSS">
+                            </div>
+                            <div class="form-group">
+                                <label for="site-url">RSSフィード URL</label>
+                                <input type="url" id="site-url" class="form-input" required placeholder="https://example.com/rss">
+                            </div>
+                            <div class="form-group">
+                                <label for="site-watcher">Watcher Identifier</label>
+                                <input type="text" id="site-watcher" class="form-input" value="threat-sifter" required>
+                            </div>
+                            <button type="submit" class="btn">フィードを登録</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Manual Submit Panel -->
+            <div id="submit-panel" class="panel">
+                <div class="content-header">
+                    <h1 class="content-title">Manual SQS Submission</h1>
+                    <p class="content-subtitle">巡回スケジュールを待たずに特定の記事URLを即座にキューへ送信し、解析を実行します</p>
+                </div>
+                <div class="card-management" style="max-width: 800px">
+                    <form id="manual-submit-form" onsubmit="handleManualSubmit(event)">
+                        <div class="form-group">
+                            <label for="submit-site-select">関連付けフィードソース (必須)</label>
+                            <select id="submit-site-select" class="select-input" required>
+                                <!-- Render options via JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="submit-url">記事のURL (必須)</label>
+                            <input type="url" id="submit-url" class="form-input" required placeholder="https://example.com/article/123">
+                        </div>
+                        <div class="form-group">
+                            <label for="submit-title">記事タイトル (必須)</label>
+                            <input type="text" id="submit-title" class="form-input" required placeholder="検出された脆弱性情報について">
+                        </div>
+                        <div class="form-group">
+                            <label for="submit-summary">要約 (任意: ページクローリングに失敗した際LLMにフォールバックして渡されます)</label>
+                            <textarea id="submit-summary" class="textarea-input" placeholder="ここに入力した内容は、クローラーが外部記事を取得できない際のバックアップ要約として渡されます。"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="submit-date">公開日付</label>
+                                <input type="date" id="submit-date" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="submit-time">公開時間</label>
+                                <input type="time" id="submit-time" class="form-input" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="margin-top: 1rem">SQSキューに送信</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 4. Statistics Panel -->
+            <div id="stats-panel" class="panel">
+                <div class="content-header">
+                    <h1 class="content-title">System Statistics & Metrics</h1>
+                    <p class="content-subtitle">時間経過に伴う処理量と脅威検出トレンド</p>
+                </div>
+                <div>
+                    <label class="form-group"><span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary)">TIME WINDOW</span></label>
+                    <select id="stats-range" class="select-input" style="max-width: 200px" onchange="loadStats()">
+                        <option value="7">過去 7 日間 (Past 7 Days)</option>
+                        <option value="30" selected>過去 30 日間 (Past 30 Days)</option>
+                        <option value="90">過去 90 日間 (Past 90 Days)</option>
+                        <option value="365">過去 1 年間 (Past 1 Year)</option>
+                    </select>
+                </div>
+
+                <!-- KPIs -->
+                <div class="grid-kpi">
+                    <div class="card-kpi">
+                        <div class="kpi-title">Total Processed</div>
+                        <div class="kpi-value" id="kpi-total">-</div>
+                    </div>
+                    <div class="card-kpi">
+                        <div class="kpi-title" style="color:var(--accent-red)">Threats Detected 🚨</div>
+                        <div class="kpi-value" id="kpi-threats" style="color:var(--accent-red)">-</div>
+                    </div>
+                    <div class="card-kpi">
+                        <div class="kpi-title" style="color:var(--accent-green)">Clean (Analysis Empty)</div>
+                        <div class="kpi-value" id="kpi-clean" style="color:var(--accent-green)">-</div>
+                    </div>
+                    <div class="card-kpi">
+                        <div class="kpi-title" style="color:var(--text-secondary)">Triage Dropped</div>
+                        <div class="kpi-value" id="kpi-dropped">-</div>
+                    </div>
+                </div>
+
+                <!-- Daily Chart -->
+                <div class="chart-box">
+                    <canvas id="daily-chart"></canvas>
+                </div>
+
+                <!-- Feed metrics table -->
+                <div class="card-management">
+                    <h2 style="font-size:1.1rem; font-weight:600">フィードソース別 記事検出数</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>フィード名</th>
+                                <th>検出数 (件)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-table-body">
+                            <!-- Render stats rows via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 5. Quick View Panel -->
+            <div id="quick-panel" class="panel">
+                <div class="content-header">
+                    <h1 class="content-title">Quick intelligence View</h1>
+                    <p class="content-subtitle">未読記事のクイックプレビュー（表示時に自動で既読になります。矢印キー ◀ ▶ または ▲ ▼ で移動）</p>
+                </div>
+                <div id="quick-view-container" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; margin: 0 auto; width: 100%;">
+                    <!-- Rendered dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- 6. Single Article View Panel -->
+            <div id="single-article-panel" class="panel">
+                <div style="max-width: 900px; margin: 0 auto; width: 100%;">
+                    <div style="margin-bottom: 1.5rem">
+                        <a href="#" onclick="goBackToDashboard(); return false;" style="color: var(--accent-blue); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem">
+                            ← ダッシュボードに戻る
+                        </a>
+                    </div>
+                    <div id="single-article-detail-container">
+                        <!-- Rendered dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Search Panel -->
+            <div id="search-panel" class="panel">
+                <div class="content-header">
+                    <h1 class="content-title">Threat Database Search</h1>
+                    <p class="content-subtitle">DynamoDBから直接、過去のすべての記事を対象にキーワード検索を行います</p>
+                </div>
+                <div class="card-management" style="margin-bottom: 1.5rem">
+                    <div style="display:flex; gap:0.75rem; align-items:center">
+                        <select id="db-search-field" class="form-input" style="width: auto; max-width: 150px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+                            <option value="all">すべて (All)</option>
+                            <option value="title">タイトル (Title)</option>
+                            <option value="url">URL (Link)</option>
+                            <option value="summary">要約 (Summary)</option>
+                        </select>
+                        <input type="text" id="db-search-input" class="form-input" placeholder="検索キーワードを入力してください" style="flex-grow:1" onkeydown="if(event.key==='Enter') executeDbSearch()">
+                        <button class="btn btn-primary" onclick="executeDbSearch()" style="width:auto; padding: 0.75rem 2rem">検索</button>
+                    </div>
+                </div>
+                <div id="db-search-results" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="color:var(--text-secondary); text-align:center; padding: 3rem">キーワードを入力して検索してください。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <script>
+        let currentAuthPassword = localStorage.getItem("ts_viewer_password") || "";
+        let dailyChartInstance = null;
+        let lastEvaluatedKey = null; // Pagination support
+
+        // Debounce helper
+        let debounceTimer;
+        function debounce(func, delay = 300) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
+        }
+
+        // Path routing helper mappings
+        const pathToPanel = {
+            '/': 'articles-panel',
+            '/articles': 'articles-panel',
+            '/quick-view': 'quick-panel',
+            '/search': 'search-panel',
+            '/site-config': 'site-panel',
+            '/submit': 'submit-panel',
+            '/stats': 'stats-panel'
+        };
+        const panelToPath = {
+            'articles-panel': '/articles',
+            'quick-panel': '/quick-view',
+            'search-panel': '/search',
+            'site-config': '/site-config',
+            'submit-panel': '/submit',
+            'stats-panel': '/stats'
+        };
+
+        function getPanelFromPath(path) {
+            if (path.startsWith('/articles/article-')) {
+                return 'single-article-panel';
+            }
+            return pathToPanel[path] || 'articles-panel';
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            // Set current date/time to manual submit form defaults
+            const now = new Date();
+            document.getElementById("submit-date").value = now.toISOString().split('T')[0];
+            document.getElementById("submit-time").value = now.toTimeString().split(' ')[0].substring(0, 5);
+
+            if (currentAuthPassword) {
+                // Verify saved password
+                fetch("/api/verify-auth", {
+                    method: "POST",
+                    headers: { "x-viewer-password": currentAuthPassword }
+                })
+                .then(res => {
+                    if (res.ok) {
+                        showApp();
+                        // Load route based on URL path
+                        const path = window.location.pathname;
+                        const initialPanel = getPanelFromPath(path);
+                        
+                        if (initialPanel === 'single-article-panel') {
+                            const articleId = path.split('/').pop();
+                            switchPanel('single-article-panel', null, false);
+                            loadSingleArticle(articleId);
+                        } else {
+                            const navItem = document.querySelector(`.nav-menu [onclick*="'${initialPanel}'"]`) || document.querySelector(".nav-menu .nav-item");
+                            switchPanel(initialPanel, navItem, false);
+                        }
+                    } else {
+                        localStorage.removeItem("ts_viewer_password");
+                        currentAuthPassword = "";
+                        showLogin();
+                    }
+                })
+                .catch(() => showLogin());
+            } else {
+                showLogin();
+            }
+        });
+
+        // Listen to browser back/forward navigation
+        window.addEventListener('popstate', (event) => {
+            const path = window.location.pathname;
+            const panelId = pathToPanel[path] || 'articles-panel';
+            const navItem = document.querySelector(`.nav-menu [onclick*="'${panelId}'"]`) || document.querySelector(".nav-menu .nav-item");
+            switchPanel(panelId, navItem, false);
+        });
+
+        function showLogin() {
+            document.getElementById("login-overlay").style.display = "flex";
+            document.getElementById("app-container").style.opacity = "0";
+        }
+
+        function showApp() {
+            document.getElementById("login-overlay").style.display = "none";
+            const app = document.getElementById("app-container");
+            app.style.display = "flex";
+            setTimeout(() => app.style.opacity = "1", 50);
+
+            // Load initial view data
+            loadArticles();
+        }
+
+        // Authentication Handlers
+        async function handleLogin(e) {
+            e.preventDefault();
+            const password = document.getElementById("password").value;
+            const errorDiv = document.getElementById("login-error");
+            
+            try {
+                const res = await fetch("/api/verify-auth", {
+                    method: "POST",
+                    headers: { "x-viewer-password": password }
+                });
+                
+                if (res.ok) {
+                    currentAuthPassword = password;
+                    localStorage.setItem("ts_viewer_password", password);
+                    errorDiv.style.display = "none";
+                    showApp();
+                    showToast("ログインに成功しました", "success");
+                } else {
+                    errorDiv.style.display = "block";
+                    errorDiv.innerText = "パスワードが間違っています。";
+                }
+            } catch (err) {
+                errorDiv.style.display = "block";
+                errorDiv.innerText = "接続エラーが発生しました。";
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem("ts_viewer_password");
+            currentAuthPassword = "";
+            showLogin();
+        }
+
+        // Switch panels (nav)
+        function switchPanel(panelId, element, updateUrl = true) {
+            // nav tabs
+            document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+            if (element) {
+                element.classList.add("active");
+            } else {
+                const navItem = document.querySelector(`.nav-menu [onclick*="'${panelId}'"]`);
+                if (navItem) navItem.classList.add("active");
+            }
+
+            // panels
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            const targetPanel = document.getElementById(panelId);
+            if (targetPanel) targetPanel.classList.add("active");
+
+            // Update browser URL
+            if (updateUrl) {
+                if (panelId !== 'single-article-panel') {
+                    const newPath = panelToPath[panelId] || '/';
+                    if (window.location.pathname !== newPath) {
+                        history.pushState({ panelId }, "", newPath);
+                    }
+                }
+            }
+
+            // Load panel specific data
+            if (panelId === 'articles-panel') {
+                loadArticles();
+            } else if (panelId === 'quick-panel') {
+                initQuickView();
+            } else if (panelId === 'search-panel') {
+                // Keep current query or clear
+            } else if (panelId === 'site-panel') {
+                loadSites();
+            } else if (panelId === 'submit-panel') {
+                loadSitesForSubmit();
+            } else if (panelId === 'stats-panel') {
+                loadStats();
+            }
+        }
+
+        // Toast Messages
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✅' : '❌'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = "fadeOut 0.3s ease forwards";
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // API Fetch Wrapper
+        async function apiFetch(url, options = {}) {
+            if (!options.headers) options.headers = {};
+            options.headers["x-viewer-password"] = currentAuthPassword;
+
+            try {
+                const res = await fetch(url, options);
+                if (res.status === 401) {
+                    showToast("セッション切れです。再ログインしてください。", "error");
+                    handleLogout();
+                    throw new Error("Unauthorized");
+                }
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.detail || "API Error");
+                }
+                return await res.json();
+            } catch (err) {
+                if (err.message !== "Unauthorized") {
+                    showToast(err.message, "error");
+                }
+                throw err;
+            }
+        }
+
+        // --- View 1: ARTICLES VIEW ---
+        let currentArticles = [];
+        let activeArticleId = null;
+
+        async function loadArticles(append = false) {
+            const statusFilter = document.getElementById("filter-status").value;
+            const readFilter = document.getElementById("filter-read").value;
+            const searchQuery = document.getElementById("search-query").value;
+
+            let url = `/api/articles?status_filter=${statusFilter}&read_filter=${readFilter}`;
+            if (searchQuery) url += `&search_query=${encodeURIComponent(searchQuery)}`;
+            
+            if (append && lastEvaluatedKey) {
+                url += `&exclusive_start_key=${encodeURIComponent(lastEvaluatedKey)}`;
+            } else {
+                lastEvaluatedKey = null; // Reset on new query
+            }
+
+            const container = document.getElementById("articles-list");
+            
+            if (!append) {
+                container.innerHTML = '<div style="padding: 1rem; color: var(--text-secondary)">Loading articles...</div>';
+            } else {
+                const loadMoreBtn = document.getElementById("load-more-btn");
+                if (loadMoreBtn) {
+                    loadMoreBtn.innerText = "Loading more...";
+                    loadMoreBtn.disabled = true;
+                }
+            }
+
+            try {
+                const res = await apiFetch(url);
+                const newArticles = res.articles || [];
+                lastEvaluatedKey = res.last_evaluated_key || null;
+
+                if (append) {
+                    currentArticles = currentArticles.concat(newArticles);
+                } else {
+                    currentArticles = newArticles;
+                }
+
+                renderArticlesList(append);
+            } catch (err) {
+                if (!append) {
+                    container.innerHTML = '<div style="padding: 1rem; color: var(--accent-red)">Failed to load articles.</div>';
+                } else {
+                    showToast("Failed to load more articles", "error");
+                    const loadMoreBtn = document.getElementById("load-more-btn");
+                    if (loadMoreBtn) {
+                        loadMoreBtn.innerText = "Load More (さらに読み込む)";
+                        loadMoreBtn.disabled = false;
+                    }
+                }
+            }
+        }
+
+        function renderArticlesList(append = false) {
+            const container = document.getElementById("articles-list");
+            
+            if (!append) {
+                container.innerHTML = "";
+            } else {
+                const existingBtn = document.getElementById("load-more-container");
+                if (existingBtn) existingBtn.remove();
+            }
+
+            if (currentArticles.length === 0) {
+                container.innerHTML = '<div style="padding: 1rem; color: var(--text-secondary)">No articles found.</div>';
+                document.getElementById("article-detail").innerHTML = `
+                    <div class="detail-placeholder">
+                        選択された記事はありません
+                    </div>
+                `;
+                return;
+            }
+
+            // Always render current state of list (since it's fast)
+            currentArticles.forEach(art => {
+                const card = document.createElement("div");
+                card.className = `article-card ${art.pk === activeArticleId ? 'active' : ''}`;
+                card.onclick = () => selectArticle(art.pk);
+
+                const isRead = art.is_read;
+                const readTag = isRead ? '<span class="badge-read">✅ Read</span>' : '<span class="badge-unread">🔵 Unread</span>';
+                
+                let statusBadge = "";
+                const status = art.processing_status;
+                if (status === "THREAT_DETECTED") {
+                    statusBadge = '<span class="badge badge-threat">Threat</span>';
+                } else if (status === "ANALYSIS_EMPTY") {
+                    statusBadge = '<span class="badge badge-clean">Clean</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-dropped">Dropped</span>';
+                }
+
+                const pubDate = art.published_at ? art.published_at.substring(0, 16).replace('T', ' ') : "Unknown";
+
+                card.innerHTML = `
+                    <div class="card-meta">
+                        <span>${pubDate}</span>
+                        <div>
+                            ${readTag}
+                            ${statusBadge}
+                        </div>
+                    </div>
+                    <div class="card-title">${art.title || 'No Title'}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Auto-select first article if none selected (PC only)
+            if (currentArticles.length > 0 && !activeArticleId && window.innerWidth > 768) {
+                selectArticle(currentArticles[0].pk);
+            }
+        }
+
+        async function selectArticle(articleId) {
+            if (window.innerWidth <= 768) {
+                // Mobile behavior: Go directly to single article view to avoid layout squishing
+                history.pushState({ panelId: 'single-article-panel', articleId: articleId }, '', `/articles/${articleId}`);
+                switchPanel('single-article-panel', null, false);
+                loadSingleArticle(articleId);
+                return;
+            }
+
+            activeArticleId = articleId;
+            
+            // Mark active card in UI
+            document.querySelectorAll(".article-card").forEach((card, index) => {
+                if (currentArticles[index] && currentArticles[index].pk === articleId) {
+                    card.classList.add("active");
+                } else {
+                    card.classList.remove("active");
+                }
+            });
+
+            const detailContainer = document.getElementById("article-detail");
+            detailContainer.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary)">Loading details...</div>';
+
+            try {
+                const data = await apiFetch(`/api/articles/${articleId}`);
+                renderArticleDetail(data);
+            } catch (err) {
+                detailContainer.innerHTML = '<div style="padding: 2rem; color: var(--accent-red)">Failed to load article details.</div>';
+            }
+        }
+
+        function renderArticleDetail(data) {
+            const meta = data.meta;
+            const iocs = data.iocs;
+            const ioas = data.ioas;
+            const malwares = data.malwares;
+
+            const detailContainer = document.getElementById("article-detail");
+            
+            // Generate metadata row
+            const isRead = meta.is_read;
+            const feedbackReviewed = meta.feedback_reviewed;
+            const feedbackVal = meta.feedback || "";
+
+            // Dynamic badges
+            let statusBadge = "";
+            if (meta.processing_status === "THREAT_DETECTED") {
+                statusBadge = '<span class="badge badge-threat">Threat Detected</span>';
+            } else if (meta.processing_status === "ANALYSIS_EMPTY") {
+                statusBadge = '<span class="badge badge-clean">Clean</span>';
+            } else {
+                statusBadge = '<span class="badge badge-dropped">Triage Dropped</span>';
+            }
+
+            detailContainer.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-title">${meta.title || 'No Title'}</div>
+                    <div class="detail-meta-row">
+                        <span>📅 <strong>Published:</strong> ${meta.published_at || 'Unknown'}</span>
+                        <span>🔗 <strong>URL:</strong> <a href="${meta.article_url}" target="_blank">Open Article Feed</a></span>
+                        <span>🤖 <strong>Model:</strong> ${meta.model_name || 'N/A'}</span>
+                        <div>${statusBadge}</div>
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button class="btn btn-action" onclick="toggleReadStatus('${meta.pk}', ${isRead}, '${escapeJS(feedbackVal)}', ${feedbackReviewed})">
+                        ${isRead ? '🔵 Mark as Unread (未読にする)' : '✅ Mark as Read (既読にする)'}
+                    </button>
+                    <button class="btn btn-action btn-secondary" onclick="toggleFeedbackStatus('${meta.pk}', ${isRead}, '${escapeJS(feedbackVal)}', ${feedbackReviewed})">
+                        ${feedbackReviewed ? 'Mark Feedback as Pending' : 'Mark Feedback as Reviewed'}
+                    </button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color)">
+
+                <div class="summary-box">
+                    <h3 style="font-size:1.05rem; font-weight:600; margin-bottom: 0.5rem">Summary (要約)</h3>
+                    <p style="font-size:0.9rem; color:var(--text-primary)">${meta.summary || '要約はありません。'}</p>
+                </div>
+
+                <div>
+                    <div class="tabs-header">
+                        <button class="tab-btn active" onclick="switchDetailTab('tab-ioc', this)">Indicators (IoC)</button>
+                        <button class="tab-btn" onclick="switchDetailTab('tab-ioa', this)">Attack Methods (IoA)</button>
+                        <button class="tab-btn" onclick="switchDetailTab('tab-malware', this)">Malware Behavior</button>
+                        <button class="tab-btn" onclick="switchDetailTab('tab-raw', this)">Raw AI Response</button>
+                    </div>
+
+                    <!-- Tab: IOC -->
+                    <div id="tab-ioc" class="tab-content active">
+                        ${renderIoCTable(iocs)}
+                    </div>
+
+                    <!-- Tab: IOA -->
+                    <div id="tab-ioa" class="tab-content">
+                        ${renderIoATable(ioas)}
+                    </div>
+
+                    <!-- Tab: Malware -->
+                    <div id="tab-malware" class="tab-content">
+                        ${renderMalwareTable(malwares)}
+                    </div>
+
+                    <!-- Tab: Raw Result -->
+                    <div id="tab-raw" class="tab-content">
+                        <div style="display:flex; flex-direction:column; gap:1rem">
+                            <div>
+                                <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.25rem">TRIAGE RESULT</div>
+                                <pre class="pre-json">${syntaxHighlight(meta.triage_result)}</pre>
+                            </div>
+                            ${meta.analysis_result ? `
+                            <div>
+                                <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.25rem">ANALYSIS RESULT</div>
+                                <pre class="pre-json">${syntaxHighlight(meta.analysis_result)}</pre>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color)">
+
+                <div class="card-management" style="background:rgba(31, 41, 55, 0.2)">
+                    <h3 style="font-size:1rem; font-weight:600">Feedback (フィードバック入力)</h3>
+                    <textarea id="detail-feedback-textarea" class="textarea-input" placeholder="Write feedback / false positive report...">${feedbackVal}</textarea>
+                    <button class="btn" style="width:auto; padding: 0.5rem 1.5rem" onclick="saveFeedback('${meta.pk}', ${isRead}, ${feedbackReviewed})">
+                        Save Feedback (保存)
+                    </button>
+                </div>
+            `;
+        }
+
+        // Tab switches in details
+        function switchDetailTab(tabId, btn) {
+            const detailContainer = document.getElementById("article-detail");
+            detailContainer.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            detailContainer.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+            document.getElementById(tabId).classList.add("active");
+        }
+
+        // Table render helpers
+        function renderIoCTable(iocs) {
+            if (!iocs || iocs.length === 0) return '<div style="color:var(--text-secondary); font-size:0.875rem">No IoCs detected in this article.</div>';
+            let rows = iocs.map(ioc => `
+                <tr>
+                    <td style="font-weight:600">${escapeHtml(ioc.type)}</td>
+                    <td style="font-family:monospace; color:var(--accent-blue)">${escapeHtml(ioc.value)}</td>
+                    <td>${escapeHtml(ioc.context || '-')}</td>
+                </tr>
+            `).join('');
+            return `
+                <table class="data-table">
+                    <thead><tr><th>Type</th><th>Value</th><th>Context</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function renderIoATable(ioas) {
+            if (!ioas || ioas.length === 0) return '<div style="color:var(--text-secondary); font-size:0.875rem">No IoAs detected in this article.</div>';
+            let rows = ioas.map(ioa => `
+                <tr>
+                    <td style="font-weight:600">${escapeHtml(ioa.type)}</td>
+                    <td style="font-family:monospace">${escapeHtml(ioa.value)}</td>
+                    <td>${escapeHtml(ioa.description || '-')}</td>
+                </tr>
+            `).join('');
+            return `
+                <table class="data-table">
+                    <thead><tr><th>Type</th><th>Value</th><th>Description</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function renderMalwareTable(malwares) {
+            if (!malwares || malwares.length === 0) return '<div style="color:var(--text-secondary); font-size:0.875rem">No malware behavior detailed in this article.</div>';
+            let rows = malwares.map(mal => `
+                <tr>
+                    <td style="font-weight:600; color:var(--accent-red)">${escapeHtml(mal.malware_name)}</td>
+                    <td>${escapeHtml(mal.behavior || '-')}</td>
+                </tr>
+            `).join('');
+            return `
+                <table class="data-table">
+                    <thead><tr><th>Malware Name</th><th>Behavior</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        // Article Actions
+        async function updateMetadata(articleId, isRead, feedback, feedbackReviewed) {
+            try {
+                await apiFetch(`/api/articles/${articleId}/metadata`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: jsonStr({
+                        is_read: isRead,
+                        feedback: feedback,
+                        feedback_reviewed: feedbackReviewed
+                    })
+                });
+                showToast("更新しました", "success");
+                // Reload list without clearing activeArticleId selection
+                await loadArticles();
+                await selectArticle(articleId);
+            } catch (err) {}
+        }
+
+        function toggleReadStatus(articleId, currentRead, feedback, feedbackReviewed) {
+            updateMetadata(articleId, !currentRead, feedback, feedbackReviewed);
+        }
+
+        function toggleFeedbackStatus(articleId, isRead, feedback, currentReviewed) {
+            updateMetadata(articleId, isRead, feedback, !currentReviewed);
+        }
+
+        function saveFeedback(articleId, isRead, feedbackReviewed) {
+            const feedbackText = document.getElementById("detail-feedback-textarea").value;
+            updateMetadata(articleId, isRead, feedbackText, feedbackReviewed);
+        }
+
+        // Helper string escapes
+        function escapeJS(str) {
+            if (!str) return "";
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function syntaxHighlight(json) {
+            if (!json) return "{}";
+            if (typeof json === 'string') {
+                try {
+                    json = JSON.parse(json);
+                } catch(e) {
+                    return json;
+                }
+            }
+            return JSON.stringify(json, null, 2);
+        }
+
+
+        // --- View 2: SITE CONFIG VIEW ---
+        let currentSites = [];
+
+        async function loadSites() {
+            const tbody = document.getElementById("sites-table-body");
+            tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-secondary); text-align:center">Loading feeds...</td></tr>';
+
+            try {
+                currentSites = await apiFetch("/api/sites");
+                tbody.innerHTML = "";
+                
+                if (currentSites.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-secondary); text-align:center">No feed sites registered.</td></tr>';
+                    return;
+                }
+
+                currentSites.forEach(s => {
+                    const tr = document.createElement("tr");
+                    const status = s.status || "ACTIVE";
+                    const statusTag = status === 'ACTIVE' ? '<span class="badge badge-clean">Active</span>' : '<span class="badge badge-dropped">Inactive</span>';
+
+                    tr.innerHTML = `
+                        <td style="font-weight:600">${escapeHtml(s.site_name)}</td>
+                        <td style="font-size:0.75rem; color:var(--text-secondary)"><a href="${s.site_url}" target="_blank" style="color:var(--accent-blue)">${escapeHtml(s.site_url)}</a></td>
+                        <td>${statusTag}</td>
+                        <td style="font-size:0.8rem">${s.last_checked_at || 'Never'}</td>
+                        <td>
+                            <div style="display:flex; gap:0.5rem">
+                                <button class="btn btn-sm btn-toggle-active ${status === 'INACTIVE' ? 'inactive' : ''}" onclick="toggleSite('${s.pk}')">
+                                    ${status === 'ACTIVE' ? 'Disable' : 'Enable'}
+                                </button>
+                                <button class="btn btn-sm btn-recrawl" onclick="recrawlSite('${s.pk}')">Recrawl</button>
+                                <button class="btn btn-sm btn-delete" onclick="deleteSite('${s.pk}')">Delete</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color:var(--accent-red); text-align:center">Failed to load sites.</td></tr>';
+            }
+        }
+
+        async function toggleSite(siteId) {
+            try {
+                await apiFetch(`/api/sites/${siteId}/toggle`, { method: "POST" });
+                showToast("ステータスを切り替えました", "success");
+                loadSites();
+            } catch (err) {}
+        }
+
+        async function recrawlSite(siteId) {
+            if (!confirm("フィードの巡回履歴をリセットして全件再取得しますか？")) return;
+            try {
+                await apiFetch(`/api/sites/${siteId}/recrawl`, { method: "POST" });
+                showToast("履歴をリセットしました。次の巡回で全件再取得されます。", "success");
+                loadSites();
+            } catch (err) {}
+        }
+
+        async function deleteSite(siteId) {
+            if (!confirm("このサイトを削除しますか？")) return;
+            try {
+                await apiFetch(`/api/sites/${siteId}`, { method: "DELETE" });
+                showToast("削除しました", "success");
+                loadSites();
+            } catch (err) {}
+        }
+
+        async function handleRegisterSite(e) {
+            e.preventDefault();
+            const name = document.getElementById("site-name").value;
+            const url = document.getElementById("site-url").value;
+            const watcher = document.getElementById("site-watcher").value;
+
+            try {
+                await apiFetch("/api/sites", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: jsonStr({ url, name, watcher })
+                });
+                showToast("サイトを登録しました", "success");
+                document.getElementById("site-name").value = "";
+                document.getElementById("site-url").value = "";
+                loadSites();
+            } catch (err) {}
+        }
+
+
+        // --- View 3: MANUAL SUBMIT VIEW ---
+        async function loadSitesForSubmit() {
+            const select = document.getElementById("submit-site-select");
+            select.innerHTML = '<option>Loading...</option>';
+
+            try {
+                const sites = await apiFetch("/api/sites");
+                select.innerHTML = "";
+                
+                if (sites.length === 0) {
+                    select.innerHTML = '<option value="">No sites registered. Register in Site Config first.</option>';
+                    return;
+                }
+
+                sites.forEach(s => {
+                    const opt = document.createElement("option");
+                    opt.value = s.pk;
+                    opt.innerText = `${s.site_name} (${s.pk})`;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                select.innerHTML = '<option>Failed to load sites.</option>';
+            }
+        }
+
+        async function handleManualSubmit(e) {
+            e.preventDefault();
+            const siteId = document.getElementById("submit-site-select").value;
+            const url = document.getElementById("submit-url").value;
+            const title = document.getElementById("submit-title").value;
+            const summary = document.getElementById("submit-summary").value;
+            const date = document.getElementById("submit-date").value;
+            const time = document.getElementById("submit-time").value;
+
+            if (!siteId) {
+                showToast("サイトフィードを選択してください", "error");
+                return;
+            }
+
+            const isoTime = `${date}T${time}:00`;
+
+            try {
+                await apiFetch("/api/manual-submit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: jsonStr({
+                        site_id: siteId,
+                        url,
+                        title,
+                        summary,
+                        published_at: isoTime
+                    })
+                });
+                showToast("SQSに送信しました。まもなく解析されます。", "success");
+                document.getElementById("submit-url").value = "";
+                document.getElementById("submit-title").value = "";
+                document.getElementById("submit-summary").value = "";
+            } catch (err) {}
+        }
+
+
+        // --- View 4: STATISTICS VIEW ---
+        async function loadStats() {
+            const days = document.getElementById("stats-range").value;
+            
+            // Set Loading States
+            document.getElementById("kpi-total").innerText = "...";
+            document.getElementById("kpi-threats").innerText = "...";
+            document.getElementById("kpi-clean").innerText = "...";
+            document.getElementById("kpi-dropped").innerText = "...";
+
+            const tableBody = document.getElementById("stats-table-body");
+            tableBody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-secondary)">Loading...</td></tr>';
+
+            try {
+                const data = await apiFetch(`/api/stats?days=${days}`);
+                
+                // KPIs
+                document.getElementById("kpi-total").innerText = data.summary.total;
+                document.getElementById("kpi-threats").innerText = data.summary.threat_detected;
+                document.getElementById("kpi-clean").innerText = data.summary.analysis_empty;
+                document.getElementById("kpi-dropped").innerText = data.summary.triage_dropped;
+
+                // Render Source distribution Table
+                const sites = await apiFetch("/api/sites");
+                const siteNames = {};
+                sites.forEach(s => siteNames[s.pk] = s.site_name);
+
+                const countsBySite = {};
+                data.items.forEach(item => {
+                    const sid = item.site_id || "Unknown";
+                    countsBySite[sid] = (countsBySite[sid] || 0) + 1;
+                });
+
+                tableBody.innerHTML = "";
+                const sortedSites = Object.entries(countsBySite).sort((a, b) => b[1] - a[1]);
+                
+                if (sortedSites.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-secondary)">No items found.</td></tr>';
+                } else {
+                    sortedSites.forEach(([sid, count]) => {
+                        const tr = document.createElement("tr");
+                        const sname = siteNames[sid] || sid;
+                        tr.innerHTML = `
+                            <td style="font-weight:600">${escapeHtml(sname)}</td>
+                            <td>${count} 件</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                }
+
+                // Render Chart
+                renderDailyStatsChart(data.items);
+
+            } catch (err) {}
+        }
+
+        function renderDailyStatsChart(items) {
+            // Group elements by Date and Status
+            const grouped = {};
+            
+            items.forEach(item => {
+                if (!item.created_at) return;
+                const dateStr = item.created_at.split('T')[0];
+                const status = item.processing_status || "UNKNOWN";
+                
+                if (!grouped[dateStr]) {
+                    grouped[dateStr] = {
+                        THREAT_DETECTED: 0,
+                        ANALYSIS_EMPTY: 0,
+                        TRIAGE_DROPPED: 0
+                    };
+                }
+                
+                if (grouped[dateStr][status] !== undefined) {
+                    grouped[dateStr][status]++;
+                }
+            });
+
+            // Sort dates
+            const sortedDates = Object.keys(grouped).sort();
+            
+            const threatData = [];
+            const cleanData = [];
+            const droppedData = [];
+
+            sortedDates.forEach(d => {
+                threatData.push(grouped[d].THREAT_DETECTED);
+                cleanData.push(grouped[d].ANALYSIS_EMPTY);
+                droppedData.push(grouped[d].TRIAGE_DROPPED);
+            });
+
+            // Rebuild Chart
+            const ctx = document.getElementById('daily-chart').getContext('2d');
+            
+            if (dailyChartInstance) {
+                dailyChartInstance.destroy();
+            }
+
+            dailyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedDates,
+                    datasets: [
+                        {
+                            label: '🔴 Threats Detected',
+                            data: threatData,
+                            backgroundColor: 'rgba(239, 68, 68, 0.75)',
+                            borderColor: 'var(--accent-red)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '🟢 Clean (Analysis Empty)',
+                            data: cleanData,
+                            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                            borderColor: 'var(--accent-green)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '⚪ Triage Dropped',
+                            data: droppedData,
+                            backgroundColor: 'rgba(107, 114, 128, 0.75)',
+                            borderColor: 'var(--accent-gray)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: 'var(--text-secondary)' }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: 'var(--text-secondary)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'var(--text-primary)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- View 5: QUICK VIEW ---
+        let quickArticles = [];
+        let quickCurrentIndex = 0;
+
+        async function initQuickView() {
+            const container = document.getElementById("quick-view-container");
+            container.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary); text-align:center">Loading unread articles...</div>';
+            
+            try {
+                // Fetch only unread articles (page 1)
+                const res = await apiFetch("/api/articles?read_filter=Unread");
+                quickArticles = res.articles || [];
+                quickCurrentIndex = 0;
+                renderQuickArticle();
+            } catch (err) {
+                container.innerHTML = '<div style="padding: 2rem; color: var(--accent-red); text-align:center">Failed to load unread articles.</div>';
+            }
+        }
+
+        async function renderQuickArticle() {
+            const container = document.getElementById("quick-view-container");
+            
+            if (!quickArticles || quickArticles.length === 0) {
+                container.innerHTML = `
+                    <div class="detail-placeholder" style="padding: 4rem; text-align:center">
+                        <span style="font-size: 3rem; margin-bottom: 1rem">🎉</span>
+                        <h2 style="font-size: 1.25rem; font-weight:600; margin-bottom: 0.5rem">すべての記事を読み終えました！</h2>
+                        <p style="color:var(--text-secondary); font-size:0.875rem">現在、未読の脅威インテリジェンス記事はありません。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const art = quickArticles[quickCurrentIndex];
+            container.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary); text-align:center">Loading article details...</div>';
+
+            try {
+                const data = await apiFetch(`/api/articles/${art.pk}`);
+                const meta = data.meta;
+                const iocs = data.iocs;
+                const ioas = data.ioas;
+
+                // Mark as read immediately on display
+                markAsReadSilently(meta.pk, meta.feedback || "", meta.feedback_reviewed || false);
+
+                let statusBadge = "";
+                if (meta.processing_status === "THREAT_DETECTED") {
+                    statusBadge = '<span class="badge badge-threat">Threat Detected</span>';
+                } else if (meta.processing_status === "ANALYSIS_EMPTY") {
+                    statusBadge = '<span class="badge badge-clean">Clean</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-dropped">Triage Dropped</span>';
+                }
+
+                let triageReasonText = "";
+                try {
+                    const triageJson = JSON.parse(meta.triage_result || "{}");
+                    if (triageJson.reason) {
+                        triageReasonText = `<div style="margin-top: 0.5rem; font-size: 0.8125rem; color: var(--text-secondary)"><strong>Triage Reason:</strong> ${escapeHtml(triageJson.reason)}</div>`;
+                    }
+                } catch(e){}
+
+                const pubDate = meta.published_at ? meta.published_at.substring(0, 16).replace('T', ' ') : "Unknown";
+
+                container.innerHTML = `
+                    <div class="card-management" style="gap: 1.25rem">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color); padding-bottom:0.75rem">
+                            <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight:600">
+                                ${quickCurrentIndex + 1} / ${quickArticles.length}
+                            </span>
+                            <div style="display:flex; gap:0.5rem">
+                                <button class="btn btn-sm btn-secondary" style="width:auto; padding: 0.4rem 0.75rem; font-size: 0.8125rem" onclick="navigateQuick(-1)" ${quickCurrentIndex === 0 ? 'disabled' : ''}>◀ 前</button>
+                                <button class="btn btn-sm btn-secondary" style="width:auto; padding: 0.4rem 0.75rem; font-size: 0.8125rem" onclick="navigateQuick(1)" ${quickCurrentIndex === quickArticles.length - 1 ? 'disabled' : ''}>次 ▶</button>
+                            </div>
+                        </div>
+
+                        <div class="detail-header">
+                            <h2 class="detail-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.3">${meta.title || 'No Title'}</h2>
+                            <div class="detail-meta-row" style="margin-top: 0.5rem; font-size: 0.8125rem">
+                                <span>📅 ${pubDate}</span>
+                                ${statusBadge}
+                            </div>
+                        </div>
+
+                        <div class="summary-box" style="background: rgba(59, 130, 246, 0.08); border-color: var(--accent-blue)">
+                            <h3 style="font-size:1rem; font-weight:700; margin-bottom: 0.75rem; color: var(--accent-blue)">📝 Summary (要約)</h3>
+                            <p style="font-size:0.9375rem; line-height: 1.7">${meta.summary || '要約はありません。'}</p>
+                        </div>
+
+                        ${triageReasonText}
+
+                        <div style="margin-top: 0.5rem">
+                            <a href="${meta.article_url}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent-blue); text-decoration: none; font-weight: 600; font-size: 0.875rem">
+                                🔗 元の記事を開く →
+                            </a>
+                        </div>
+
+                        <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: rgba(31, 41, 55, 0.3)">
+                            <summary style="cursor: pointer; font-weight: 600; font-size: 0.9375rem; list-style: none; display: flex; align-items: center; gap: 0.5rem">
+                                <span style="display: inline-block; transition: transform 0.2s">▶</span> Indicators (IoC)
+                            </summary>
+                            <div style="margin-top: 0.75rem">
+                                ${renderIoCTable(iocs)}
+                            </div>
+                        </details>
+
+                        <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: rgba(31, 41, 55, 0.3)">
+                            <summary style="cursor: pointer; font-weight: 600; font-size: 0.9375rem; list-style: none; display: flex; align-items: center; gap: 0.5rem">
+                                <span style="display: inline-block; transition: transform 0.2s">▶</span> Attack Methods (IoA)
+                            </summary>
+                            <div style="margin-top: 0.75rem">
+                                ${renderIoATable(ioas)}
+                            </div>
+                        </details>
+
+                        <div style="margin-top: 1rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 1rem">
+                            <a href="/articles/${meta.pk}" onclick="event.preventDefault(); history.pushState({ panelId: 'single-article-panel', articleId: '${meta.pk}' }, '', '/articles/${meta.pk}'); switchPanel('single-article-panel', null, false); loadSingleArticle('${meta.pk}');" style="color: var(--accent-blue); text-decoration: none; font-weight: 600; font-size: 0.875rem">
+                                📄 詳細情報を表示 →
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                container.innerHTML = '<div style="padding: 2rem; color: var(--accent-red); text-align:center">Failed to load article details.</div>';
+            }
+        }
+
+        async function markAsReadSilently(articleId, feedback, feedbackReviewed) {
+            try {
+                await fetch(`/api/articles/${articleId}/metadata`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "x-viewer-password": currentAuthPassword
+                    },
+                    body: jsonStr({
+                        is_read: true,
+                        feedback: feedback,
+                        feedback_reviewed: feedbackReviewed
+                    })
+                });
+            } catch (err) {
+                console.error("Failed to mark as read silently:", err);
+            }
+        }
+
+        function navigateQuick(direction) {
+            const newIndex = quickCurrentIndex + direction;
+            if (newIndex >= 0 && newIndex < quickArticles.length) {
+                quickCurrentIndex = newIndex;
+                renderQuickArticle();
+            }
+        }
+
+        function jumpToDetail(articleId) {
+            // 1. Set Article tab read filter to "All" (since it was just read)
+            document.getElementById("filter-read").value = "All";
+            
+            // 2. Set globally active article PK
+            activeArticleId = articleId;
+            
+            // 3. Switch to Articles panel
+            const articlesNavItem = document.querySelector(".nav-menu .nav-item:nth-child(1)");
+            switchPanel('articles-panel', articlesNavItem);
+        }
+
+        // --- View 6: SINGLE ARTICLE VIEW & View 7: SEARCH ---
+        async function loadSingleArticle(articleId) {
+            const container = document.getElementById("single-article-detail-container");
+            container.innerHTML = '<div style="padding: 3rem; color: var(--text-secondary); text-align:center">Loading article details...</div>';
+            
+            try {
+                const data = await apiFetch(`/api/articles/${articleId}`);
+                const meta = data.meta;
+                const iocs = data.iocs;
+                const ioas = data.ioas;
+                const malwares = data.malwares;
+
+                // Mark as read immediately on display
+                markAsReadSilently(meta.pk, meta.feedback || "", meta.feedback_reviewed || false);
+
+                let statusBadge = "";
+                if (meta.processing_status === "THREAT_DETECTED") {
+                    statusBadge = '<span class="badge badge-threat">Threat Detected</span>';
+                } else if (meta.processing_status === "ANALYSIS_EMPTY") {
+                    statusBadge = '<span class="badge badge-clean">Clean</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-dropped">Triage Dropped</span>';
+                }
+
+                let triageReasonText = "";
+                try {
+                    const triageJson = JSON.parse(meta.triage_result || "{}");
+                    if (triageJson.reason) {
+                        triageReasonText = `<div style="margin-top: 0.5rem; font-size: 0.8125rem; color: var(--text-secondary)"><strong>Triage Reason:</strong> ${escapeHtml(triageJson.reason)}</div>`;
+                    }
+                } catch(e){}
+
+                const rawTriage = meta.triage_result ? JSON.stringify(JSON.parse(meta.triage_result), null, 2) : "{}";
+                const rawAnalysis = meta.analysis_result ? JSON.stringify(JSON.parse(meta.analysis_result), null, 2) : "{}";
+                const pubDate = meta.published_at ? meta.published_at.substring(0, 16).replace('T', ' ') : "Unknown";
+
+                container.innerHTML = `
+                    <div class="card-management" style="gap: 1.5rem">
+                        <div class="detail-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem">
+                            <h2 class="detail-title" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); line-height: 1.3">${meta.title || 'No Title'}</h2>
+                            <div class="detail-meta-row" style="margin-top: 0.75rem; font-size: 0.8125rem">
+                                <span>📅 ${pubDate}</span>
+                                ${statusBadge}
+                            </div>
+                        </div>
+
+                        <div class="summary-box" style="background: rgba(59, 130, 246, 0.08); border-color: var(--accent-blue)">
+                            <h3 style="font-size:1rem; font-weight:700; margin-bottom: 0.75rem; color: var(--accent-blue)">📝 Summary (要約)</h3>
+                            <p style="font-size:0.9375rem; line-height: 1.7">${meta.summary || '要約はありません。'}</p>
+                        </div>
+
+                        ${triageReasonText}
+
+                        <div style="margin-top: 0.5rem">
+                            <a href="${meta.article_url}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent-blue); text-decoration: none; font-weight: 600; font-size: 0.875rem">
+                                🔗 元の記事を開く (Open Original Article) →
+                            </a>
+                        </div>
+
+                        <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: rgba(31, 41, 55, 0.3)" open>
+                            <summary style="cursor: pointer; font-weight: 600; font-size: 1rem; margin-bottom: 0.75rem; list-style: none; display: flex; align-items: center; gap: 0.5rem">
+                                <span style="display: inline-block; transition: transform 0.2s">▼</span> Indicators (IoC)
+                            </summary>
+                            <div style="margin-top: 0.75rem">
+                                ${renderIoCTable(iocs)}
+                            </div>
+                        </details>
+
+                        <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: rgba(31, 41, 55, 0.3)">
+                            <summary style="cursor: pointer; font-weight: 600; font-size: 1rem; margin-bottom: 0.75rem; list-style: none; display: flex; align-items: center; gap: 0.5rem">
+                                <span style="display: inline-block; transition: transform 0.2s">▶</span> Attack Methods (IoA)
+                            </summary>
+                            <div style="margin-top: 0.75rem">
+                                ${renderIoATable(ioas)}
+                            </div>
+                        </details>
+
+                        <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: rgba(31, 41, 55, 0.3)">
+                            <summary style="cursor: pointer; font-weight: 600; font-size: 1rem; margin-bottom: 0.75rem; list-style: none; display: flex; align-items: center; gap: 0.5rem">
+                                <span style="display: inline-block; transition: transform 0.2s">▶</span> Malware Behavior
+                            </summary>
+                            <div style="margin-top: 0.75rem">
+                                ${renderMalwareTable(malwares)}
+                            </div>
+                        </details>
+
+                        <div class="feedback-section" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem">
+                            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom: 0.75rem">Feedback & Review</h3>
+                            <div style="display:flex; flex-direction:column; gap: 0.75rem">
+                                <textarea id="single-feedback" class="form-input" rows="3" placeholder="Add feedback here...">${meta.feedback || ''}</textarea>
+                                <div style="display:flex; justify-content:space-between; align-items:center">
+                                    <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer">
+                                        <input type="checkbox" id="single-feedback-reviewed" ${meta.feedback_reviewed ? 'checked' : ''}>
+                                        Feedback Reviewed
+                                    </label>
+                                    <button class="btn btn-primary" onclick="saveSingleFeedback('${meta.pk}')">Save Feedback</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem">
+                            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom: 0.75rem">Raw Bedrock Responses</h3>
+                            <div style="display:flex; flex-direction:column; gap: 1rem">
+                                <div>
+                                    <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.25rem">TRIAGE RESULT</div>
+                                    <pre class="pre-json">${syntaxHighlight(rawTriage)}</pre>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.25rem">ANALYSIS RESULT</div>
+                                    <pre class="pre-json">${syntaxHighlight(rawAnalysis)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                container.innerHTML = '<div style="padding: 3rem; color: var(--accent-red); text-align:center">Failed to load article details.</div>';
+            }
+        }
+
+        async function saveSingleFeedback(articleId) {
+            const feedback = document.getElementById("single-feedback").value;
+            const reviewed = document.getElementById("single-feedback-reviewed").checked;
+            
+            try {
+                await fetch(`/api/articles/${articleId}/metadata`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "x-viewer-password": currentAuthPassword
+                    },
+                    body: jsonStr({
+                        is_read: true,
+                        feedback: feedback,
+                        feedback_reviewed: reviewed
+                    })
+                });
+                showToast("Feedback saved successfully!");
+            } catch (err) {
+                showToast("Failed to save feedback", "error");
+            }
+        }
+
+        function goBackToDashboard() {
+            activeArticleId = null; // Clear active article selection
+            history.pushState({ panelId: 'articles-panel' }, "", "/articles");
+            const navItem = document.querySelector(".nav-menu .nav-item:nth-child(1)");
+            switchPanel('articles-panel', navItem, false);
+        }
+
+        async function executeDbSearch() {
+            const query = document.getElementById("db-search-input").value.trim();
+            const field = document.getElementById("db-search-field").value;
+            if (!query) {
+                showToast("検索キーワードを入力してください", "warning");
+                return;
+            }
+
+            const resultsContainer = document.getElementById("db-search-results");
+            resultsContainer.innerHTML = '<div style="color:var(--text-secondary); text-align:center; padding:3rem">DynamoDBに問い合わせ中...</div>';
+
+            try {
+                const res = await apiFetch(`/api/articles?search_query=${encodeURIComponent(query)}&search_field=${field}`);
+                const articles = res.articles || [];
+
+                if (articles.length === 0) {
+                    resultsContainer.innerHTML = '<div style="color:var(--text-secondary); text-align:center; padding:3rem">該当する記事が見つかりませんでした。</div>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = "";
+                articles.forEach(art => {
+                    const card = document.createElement("div");
+                    card.className = "card-management";
+                    card.style.cursor = "pointer";
+                    card.style.transition = "transform 0.2s, border-color 0.2s";
+                    card.style.border = "1px solid var(--border-color)";
+                    
+                    card.onmouseover = () => { card.style.borderColor = "var(--accent-blue)"; card.style.transform = "translateY(-2px)"; };
+                    card.onmouseout = () => { card.style.borderColor = "var(--border-color)"; card.style.transform = "none"; };
+                    
+                    card.onclick = () => {
+                        history.pushState({ panelId: 'single-article-panel', articleId: art.pk }, '', `/articles/${art.pk}`);
+                        switchPanel('single-article-panel', null, false);
+                        loadSingleArticle(art.pk);
+                    };
+
+                    const isRead = art.is_read;
+                    const readTag = isRead ? '<span class="badge-read">✅ Read</span>' : '<span class="badge-unread">🔵 Unread</span>';
+                    
+                    let statusBadge = "";
+                    if (art.processing_status === "THREAT_DETECTED") {
+                        statusBadge = '<span class="badge badge-threat">Threat</span>';
+                    } else if (art.processing_status === "ANALYSIS_EMPTY") {
+                        statusBadge = '<span class="badge badge-clean">Clean</span>';
+                    } else {
+                        statusBadge = '<span class="badge badge-dropped">Dropped</span>';
+                    }
+
+                    const pubDate = art.published_at ? art.published_at.substring(0, 16).replace('T', ' ') : "Unknown";
+
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem">
+                            <span style="font-size:0.8rem; color:var(--text-secondary)">📅 ${pubDate}</span>
+                            <div style="display:flex; gap:0.5rem">
+                                ${readTag}
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        <h3 style="font-size:1.1rem; font-weight:600; color:var(--text-primary); margin-bottom:0.5rem">${escapeHtml(art.title)}</h3>
+                        <p style="font-size:0.875rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escapeHtml(art.article_url)}</p>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+            } catch (err) {
+                resultsContainer.innerHTML = '<div style="color:var(--accent-red); text-align:center; padding:3rem">検索の実行中にエラーが発生しました。</div>';
+            }
+        }
+
+        // Keyboard navigation setup
+        window.addEventListener('keydown', (e) => {
+            const quickPanel = document.getElementById("quick-panel");
+            if (!quickPanel || !quickPanel.classList.contains("active")) return;
+            if (!quickArticles || quickArticles.length === 0) return;
+
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault();
+                if (quickCurrentIndex < quickArticles.length - 1) {
+                    navigateQuick(1);
+                } else {
+                    showToast("最後の未読記事です", "info");
+                }
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                e.preventDefault();
+                if (quickCurrentIndex > 0) {
+                    navigateQuick(-1);
+                } else {
+                    showToast("最初の未読記事です", "info");
+                }
+            }
+        });
+
+        // Tiny utils
+        function jsonStr(obj) {
+            return JSON.stringify(obj);
+        }
+    </script>
+</body>
+</html>

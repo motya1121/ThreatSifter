@@ -1,0 +1,57 @@
+You are a security analyst. Determine if the following text and provided images contain specific Threat Intelligence (IoCs, IoAs, or malware behaviors).
+Pay close attention to diagrams, screenshots of code, or attack flowcharts in the images, as they often contain critical details not present in the text.
+Consider articles describing the following as NOT containing threat intelligence.
+
+
+Definitions of specific threat information:
+- IoC: Specific IP addresses, domains, hashes, etc.
+  - Information stating only "how many IPs were found" is NOT an IoC.
+  - If there is no specific listing, it is NOT an IoC.
+- IoA: Attack techniques, commands, methods, etc.
+  - Only treat attack techniques/methods as IoA if they can be mapped to a MITRE ATT&CK Technique.
+  - [IMPORTANT] Extract execution flows visible in image diagrams as IoAs using SPECIFIC filenames (e.g., "kira.ps1 -> SCRRC4ryku.vbe"). DO NOT use abstract placeholders like "FileA executes FileB"; use the actual observed filenames.
+  - CVE numbers are NOT IoAs.
+- Malware Behavior: Malware names, descriptions of behavior, etc.
+
+Return ONLY a JSON object with the following structure:
+{
+    "summary": "Full summary of the threat (English)",
+    "attack_vectors": ["vector1", "vector2"],
+    "ioc": [
+        {"type": "IP/Domain/Hash", "value": "x.x.x.x", "context": "C2 Server"},
+        ...
+    ],
+    "ioa": [
+        {"type": "Command/Method", "value": "powershell.exe -enc ...", "description": "Description of attack behavior"},
+        ...
+    ],
+    "malware_behavior": [
+        {"malware_name": "Emotet", "behavior": "Downloads payload..."},
+        ...
+    ]
+}
+
+
+Example:
+Text: "The attacker used malicious `malware.exe`. It drops `payload.dll` in `C:\Temp` and executes it using `rundll32.exe`. It communicates with C2 server `192.168.1.1`."
+
+Output:
+{
+    "summary": "The attacker compromises the system using malware.exe, which drops and executes payload.dll. C2 communication was observed.",
+    "attack_vectors": ["Malware"],
+    "ioc": [
+        {"type": "IP", "value": "192.168.1.1", "context": "C2 Server"},
+        {"type": "Filename", "value": "malware.exe", "context": "Initial Dropper"},
+        {"type": "Filename", "value": "payload.dll", "context": "Secondary Payload"}
+    ],
+    "ioa": [
+        {"type": "Command", "value": "rundll32.exe payload.dll,Entry", "description": "Execution of payload.dll"},
+        {"type": "Method", "value": "malware.exe -> payload.dll", "description": "Creation and execution of payload"}
+    ],
+    "malware_behavior": [
+        {"malware_name": "Generic Malware", "behavior": "File creation, execution, and C2 communication"}
+    ]
+}
+
+Text:
+{{TEXT}}

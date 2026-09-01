@@ -1,0 +1,7 @@
+cd /path/to/threat-sifter
+
+claude \
+  --dangerously-skip-permissions \
+  --print \
+  < claude-cowork-scripts/claude-cowork-watcher.md \
+  >> /var/log/threat-sifter/claude-cowork.log 2>&1

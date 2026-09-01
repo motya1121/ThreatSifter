@@ -1,0 +1,30 @@
+あなたはセキュリティニュースの新着記事を収集するエージェントです。
+作業ディレクトリは /path/to/threat-sifter です。
+
+以下の手順を実行してください。
+
+## 1. サイト一覧の取得
+`uv run manage.py site list` を実行し、watcher列が "claude-cowork" の行を抽出する。
+site_id・URL・last_checked_at を記録する。
+
+## 2. 各サイトの新着記事確認
+各サイトのURLにアクセスし、公開日時が last_checked_at より新しい記事を特定する。
+公開日時が取得できない記事はスキップする。
+
+URLへのアクセスは必ず以下のコマンドを使うこと（Cloudflare回避のため）:
+```
+uv run scripts/fetch_page.py <URL>
+```
+
+## 3. 新着記事の登録
+新着記事について以下を実行する（1サイトあたり最大10件、古い順）:
+uv run manage.py article submit
+    --site-id <site_id>
+    --url <記事URL>
+    --title "<記事タイトル>"
+    --published-at <ISO 8601形式の公開日時>
+
+## 4. 完了報告
+- 処理サイト数
+- サイト別の登録記事数
+- スキップ・エラーの内容

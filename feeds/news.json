@@ -1,0 +1,87 @@
+[
+    {
+        "name": "The Record from Recorded Future News",
+        "url": "https://therecord.media/feed/"
+    },
+    {
+        "name": "Infosecurity",
+        "url": "http://www.infosecurity-magazine.com/rss/news/"
+    },
+    {
+        "name": "BleepingComputer",
+        "url": "http://www.bleepingcomputer.com/feed/"
+    },
+    {
+        "name": "Dark Reading",
+        "url": "https://www.darkreading.com/rss.xml"
+    },
+    {
+        "name": "Security Boulevard",
+        "url": "http://www.securitybloggersnetwork.com/feed/"
+    },
+    {
+        "name": "Krebs on Security",
+        "url": "https://krebsonsecurity.com/feed"
+    },
+    {
+        "name": "Help Net Security",
+        "url": "https://www.helpnetsecurity.com/feed/"
+    },
+    {
+        "name": "Daily CyberSecurity",
+        "url": "https://securityonline.info/feed/"
+    },
+    {
+        "name": "ScanNetSecurity - 脆弱性と脅威",
+        "url": "http://scan.netsecurity.ne.jp/rss/threat.rdf"
+    },
+    {
+        "name": "ScanNetSecurity",
+        "url": "https://scan.netsecurity.ne.jp/rss/index.rdf"
+    },
+    {
+        "name": "The Hacker News",
+        "url": "http://www.blogger.com/feeds/4802841478634147276/posts/default"
+    },
+    {
+        "name": "サイバーセキュリティ・情報漏洩ニュース – サイバーセキュリティ.com",
+        "url": "https://cybersecurity-jp.com/news/feed"
+    },
+    {
+        "name": "is702",
+        "url": "http://feeds.trendmicro.com/jp/is702"
+    },
+    {
+        "name": "gbhackers",
+        "url": "https://gbhackers.com/feed/"
+    },
+    {
+        "name": "cysecurity",
+        "url": "https://www.cysecurity.news/feeds/posts/default"
+    },
+    {
+        "name": "itsecuritynews",
+        "url": "https://itsecuritynews.info/feed"
+    },
+    {
+        "name": "Security NEXT",
+        "url": "https://www.security-next.com/feed"
+    },
+    {
+        "name": "ZERO DAY",
+        "url": "https://www.zetter-zeroday.com/rss/"
+    },
+    {
+        "name": "darknet",
+        "url": "https://www.darknet.org.uk/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "the Register",
+        "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss"
+    },
+    {
+        "name": "hack read",
+        "url": "https://hackread.com/feed/"
+    }
+]

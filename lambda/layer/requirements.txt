@@ -1,0 +1,7 @@
+boto3
+feedparser
+requests
+pydantic
+pytest
+beautifulsoup4
+curl-cffi

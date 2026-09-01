@@ -1,0 +1,386 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Threat Sifter - Automated Threat Intelligence Tool
+
+Parameters:
+  SlackTokenParameterName:
+    Type: String
+    Description: SSM Parameter Name for Slack Token
+    Default: "/threat-sifter/slack-token"
+  TriageModelId:
+    Type: String
+    Description: Bedrock Model ID for Triage (Nova Lite)
+    Default: "jp.amazon.nova-2-lite-v1:0"
+  AnalysisModelId:
+    Type: String
+    Description: Bedrock Model ID for Analysis (Sonnet)
+    Default: "jp.anthropic.claude-sonnet-4-6"
+  AlertEmail:
+    Type: String
+    Description: Email address for error notifications (Optional)
+    Default: ""
+  PromptLang:
+    Type: String
+    Description: Language code for prompts (en or ja)
+    Default: "ja"
+    AllowedValues:
+      - en
+      - ja
+  ViewerPasswordParameterName:
+    Type: String
+    Description: SSM Parameter Name for Streamlit Viewer Password
+    Default: "/threat-sifter/viewer-password"
+  CustomDomainName:
+    Type: String
+    Description: Custom domain name for the Streamlit viewer (e.g., sifter.example.com).
+    Default: "change-me-before-deploying.example.com"
+
+Conditions:
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, ""]]
+
+Rules:
+  CustomDomainRequired:
+    Assertions:
+      - Assert: !Not [!Or [
+          !Equals [!Ref CustomDomainName, ""],
+          !Equals [!Ref CustomDomainName, "change-me-before-deploying.example.com"]
+        ]]
+        AssertDescription: "You must specify a valid CustomDomainName parameter (cannot be the default placeholder)."
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 256
+    Architectures:
+      - x86_64
+    Tracing: Active
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+Resources:
+  # DynamoDB Table (Single Table Design)
+  ThreatSifterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ThreatSifterTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: last_checked_at
+          AttributeType: S
+        - AttributeName: site_id
+          AttributeType: S
+        - AttributeName: published_at
+          AttributeType: S
+        - AttributeName: indicator
+          AttributeType: S
+        - AttributeName: category
+          AttributeType: S
+        - AttributeName: unread_flag
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: last_checked_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: SiteIndex
+          KeySchema:
+            - AttributeName: site_id
+              KeyType: HASH
+            - AttributeName: published_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: IndicatorIndex
+          KeySchema:
+            - AttributeName: indicator
+              KeyType: HASH
+            - AttributeName: published_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: TypeIndex
+          KeySchema:
+            - AttributeName: category
+              KeyType: HASH
+            - AttributeName: published_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: UnreadIndex
+          KeySchema:
+            - AttributeName: unread_flag
+              KeyType: HASH
+            - AttributeName: published_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Project
+          Value: ThreatSifter
+
+  # SQS Queue
+  ProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 360 # Must exceed AnalyzerFunction Timeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ProcessingDLQ.Arn
+        maxReceiveCount: 4
+
+  ProcessingDLQ:
+    Type: AWS::SQS::Queue
+
+  # Error Notification Topic
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: ThreatSifter-Alerts
+      TopicName: ThreatSifter-Alerts
+
+  AlertSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      Protocol: email
+      TopicArn: !Ref AlertTopic
+      Endpoint: !Ref AlertEmail
+
+  # Common Layer
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: ThreatSifterCommonLayer
+      Description: Common utilities and dependencies
+      ContentUri: lambda/layer/
+      CompatibleRuntimes:
+        - python3.12
+      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: python3.12
+
+  # RSS Crawler Function
+  CrawlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      CodeUri: lambda/crawler/
+      Handler: crawler_handler.lambda_handler
+      Layers:
+        - !Ref CommonLayer
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref ThreatSifterTable
+          SQS_QUEUE_URL: !Ref ProcessingQueue
+          TRIAGE_MODEL_ID: !Ref TriageModelId
+          ANALYZER_MODEL_ID: !Ref AnalysisModelId
+          PROMPT_LANG: !Ref PromptLang
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ThreatSifterTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt ProcessingQueue.QueueName
+      Events:
+        ScheduledRule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)
+            Enabled: true
+
+  CrawlerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alarm if CrawlerFunction has errors"
+      Namespace: "AWS/Lambda"
+      MetricName: "Errors"
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref CrawlerFunction
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref AlertTopic
+
+  # Analyzer Function
+  AnalyzerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      CodeUri: lambda/analyzer/
+      Handler: analyzer_handler.lambda_handler
+      Layers:
+        - !Ref CommonLayer
+      Timeout: 300 # Bedrock Analysis with many images can take 60-120s; allow up to 5m
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref ThreatSifterTable
+          BEDROCK_REGION: ap-northeast-1 # Bedrock model availability is region specific
+          SLACK_TOKEN_PARAM: !Ref SlackTokenParameterName
+          DEFAULT_TRIAGE_MODEL_ID: !Ref TriageModelId
+          DEFAULT_ANALYSIS_MODEL_ID: !Ref AnalysisModelId
+          PROMPT_LANG: !Ref PromptLang
+          SQS_QUEUE_URL: !Ref ProcessingQueue
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ThreatSifterTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${SlackTokenParameterName}"
+            - Effect: Allow
+              Action:
+                - sqs:ChangeMessageVisibility
+              Resource: !GetAtt ProcessingQueue.Arn
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProcessingQueue.Arn
+            BatchSize: 5
+            ScalingConfig:
+              MaximumConcurrency: 10
+
+  AnalyzerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alarm if AnalyzerFunction has errors"
+      Namespace: "AWS/Lambda"
+      MetricName: "Errors"
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AnalyzerFunction
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref AlertTopic
+
+  # Streamlit Dashboard Viewer (AWS Lambda Web Adapter)
+  ViewerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Timeout: 120
+      MemorySize: 512
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref ThreatSifterTable
+          SQS_QUEUE_URL: !Ref ProcessingQueue
+          TRIAGE_MODEL_ID: !Ref TriageModelId
+          ANALYZER_MODEL_ID: !Ref AnalysisModelId
+          VIEWER_PASSWORD_PARAM: !Ref ViewerPasswordParameterName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ThreatSifterTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt ProcessingQueue.QueueName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ViewerPasswordParameterName}"
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        HttpApiRoot:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+    Metadata:
+      DockerContext: .
+      Dockerfile: lambda/viewer/Dockerfile
+
+  # Route 53 Hosted Zone for Custom Domain (delegated subdomain)
+  ViewerHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Sub "${CustomDomainName}."
+
+  # SSL/TLS Certificate for Custom Domain
+  ViewerCertificate:
+    Type: AWS::CertificateManager::Certificate
+    DependsOn: ViewerHostedZone
+    Properties:
+      DomainName: !Ref CustomDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref CustomDomainName
+          HostedZoneId: !Ref ViewerHostedZone
+
+  # Custom Domain for API Gateway
+  ApiGatewayCustomDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    DependsOn: ViewerCertificate
+    Properties:
+      DomainName: !Ref CustomDomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref ViewerCertificate
+          EndpointType: REGIONAL
+
+  ApiGatewayApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    DependsOn: ApiGatewayCustomDomain
+    Properties:
+      ApiId: !Ref ServerlessHttpApi
+      DomainName: !Ref CustomDomainName
+      Stage: $default
+
+  ViewerDnsRecord:
+    Type: AWS::Route53::RecordSet
+    DependsOn: ApiGatewayCustomDomain
+    Properties:
+      HostedZoneId: !Ref ViewerHostedZone
+      Name: !Ref CustomDomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApiGatewayCustomDomain.RegionalDomainName
+        HostedZoneId: !GetAtt ApiGatewayCustomDomain.RegionalHostedZoneId
+
+Outputs:
+  ThreatSifterTable:
+    Description: "DynamoDB Table Name"
+    Value: !Ref ThreatSifterTable
+  ProcessingQueue:
+    Description: "SQS Queue URL"
+    Value: !Ref ProcessingQueue
+  AlertTopicArn:
+    Description: "SNS Topic ARN for Alerts"
+    Value: !Ref AlertTopic
+  ViewerApiUrl:
+    Description: "URL for the Streamlit Viewer API Gateway endpoint"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  ViewerHostedZoneNameServers:
+    Description: "Name Servers for the created Route 53 Hosted Zone. Add these as NS records in the parent domain's account."
+    Value: !Join [", ", !GetAtt ViewerHostedZone.NameServers]

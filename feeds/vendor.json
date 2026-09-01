@@ -1,0 +1,686 @@
+[
+    {
+        "name": "IBMセキュリティー・インテリジェンス・ブログ",
+        "url": "https://www.ibm.com/blogs/security/jp-ja/feed/atom/"
+    },
+    {
+        "name": "blog.avast.com JP",
+        "url": "https://blog.avast.com/jp/rss.xml"
+    },
+    {
+        "name": "カスペルスキー公式ブログ",
+        "url": "https://blog.kaspersky.co.jp/feed/"
+    },
+    {
+        "name": "トレンドマイクロ セキュリティブログ",
+        "url": "https://blog.trendmicro.co.jp/feed"
+    },
+    {
+        "name": "TrendAI セキュリティブログ(JP)",
+        "url": "https://www.trendmicro.com/ja_jp/research.html",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "TrendAI セキュリティブログ(EN)",
+        "url": "https://www.trendmicro.com/en_us/research.html",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Palo Alto Press Releases",
+        "url": "https://investors.paloaltonetworks.com/rss/pressrelease.aspx"
+    },
+    {
+        "name": "Stories by MITRE Caldera on Medium",
+        "url": "https://medium.com/feed/@mitrecaldera"
+    },
+    {
+        "name": "Prisma™ Cloud Latest Releases",
+        "url": "https://feedly.com/web/e1d15f10-1e97-4f22-ab45-ae3922e686c1"
+    },
+    {
+        "name": "Recorded Future",
+        "url": "https://www.recordedfuture.com/feed"
+    },
+    {
+        "name": "Palo Alto Networks Security Advisories",
+        "url": "https://security.paloaltonetworks.com/rss.xml"
+    },
+    {
+        "name": "Google Online Security Blog",
+        "url": "https://security.googleblog.com/feeds/posts/default?alt=rss"
+    },
+    {
+        "name": "フォーティネット",
+        "url": "https://feeds.fortinet.com/fortinet/blogs",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "株式会社ラック LAC WATCH",
+        "url": "https://www.lac.co.jp/lacwatch/feed.xml"
+    },
+    {
+        "name": "Fire Eye Threat Research ",
+        "url": "http://www.fireeye.com/blog/feed"
+    },
+    {
+        "name": "https://docs.paloaltonetworks.com/prisma/prisma-cloud",
+        "url": "https://feedly.com/f/alert/f6132dc4-614d-431d-9f47-3b0619579f19"
+    },
+    {
+        "name": "NEC セキュリティブログ",
+        "url": "https://jpn.nec.com/cybersecurity/blog/rss/master.xml"
+    },
+    {
+        "name": "Palo Alto Networks Blog",
+        "url": "http://researchcenter.paloaltonetworks.com/feed/"
+    },
+    {
+        "name": "blog.avast.com EN",
+        "url": "https://blog.avast.com/rss.xml"
+    },
+    {
+        "name": "Prisma Cloud Release Notes",
+        "url": "https://feedly.com/web/80a3a382-ea78-4338-b241-d45f5147c94c"
+    },
+    {
+        "name": "IIJ Security Diary",
+        "url": "https://sect.iij.ad.jp/index.xml"
+    },
+    {
+        "name": "CrowdStrike",
+        "url": "https://www.crowdstrike.com/blog/feed/"
+    },
+    {
+        "name": "LevelBlue SpiderLabs Blog",
+        "url": "https://www.levelblue.com/blogs/spiderlabs-blog/rss.xml"
+    },
+    {
+        "name": "LevelBlue Blog",
+        "url": "https://www.levelblue.com/blogs/levelblue-blog/rss.xml"
+    },
+    {
+        "name": "LevelBlue Blog AI",
+        "url": "https://www.levelblue.com/blogs/levelblue-blog/tag/ai/rss.xml"
+    },
+    {
+        "name": "LevelBlue Blog cybersecurity",
+        "url": "https://www.levelblue.com/blogs/levelblue-blog/tag/cybersecurity-blogs/rss.xml"
+    },
+    {
+        "name": "LevelBlue Blog research",
+        "url": "https://www.levelblue.com/blogs/levelblue-blog/tag/research/rss.xml"
+    },
+    {
+        "name": "LevelBlue Blog alienapps",
+        "url": "https://www.levelblue.com/blogs/levelblue-blog/tag/alienapps/rss.xml"
+    },
+    {
+        "name": "LevelBlue Blog email",
+        "url": "https://www.levelblue.com/blogs/levelblue-blog/tag/email/rss.xml"
+    },
+    {
+        "name": "Proofpoint News",
+        "url": "https://www.proofpoint.com/rss.xml"
+    },
+    {
+        "name": "BlueVoyant - Blog",
+        "url": "https://www.bluevoyant.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "seqrite blog",
+        "url": "https://www.seqrite.com/blog/feed"
+    },
+    {
+        "name": "Sophos Blog",
+        "url": "https://www.sophos.com/en-us/blog/feed?id=blt6f15f4f7deaf4242"
+    },
+    {
+        "name": "Qualys Security Blog",
+        "url": "https://blog.qualys.com/feed"
+    },
+    {
+        "name": "Cofense Blogs",
+        "url": "https://cofense.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "NRIセキュア ブログ",
+        "url": "https://www.nri-secure.co.jp/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "checkpoint Blog",
+        "url": "https://blog.checkpoint.com/feed/"
+    },
+    {
+        "name": "checkpoint research Blog",
+        "url": "https://research.checkpoint.com/feed/"
+    },
+    {
+        "name": "rapid7 Blog",
+        "url": "https://www.rapid7.com/rss.xml"
+    },
+    {
+        "name": "Securelist by Kaspersky",
+        "url": "https://securelist.com/feed/"
+    },
+    {
+        "name": "sysdig blog",
+        "url": "https://www.sysdig.com/blog/rss.xml"
+    },
+    {
+        "name": "sekoia blog",
+        "url": "https://www.sekoia.com/blog/rss.xml"
+    },
+    {
+        "name": "sekoia blog",
+        "url": "https://security.macnica.co.jp/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Unit42-Timely-Threat-Intel",
+        "url": "https://github.com/PaloAltoNetworks/Unit42-timely-threat-intel",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Bitdefender Blog",
+        "url": "https://www.bitdefender.com/en-us/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Malwarebytes labs",
+        "url": "https://www.malwarebytes.com/blog/feed/index.xml"
+    },
+    {
+        "name": "Blackpoint  Blog",
+        "url": "https://blackpointcyber.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "arcticwolf  Blog",
+        "url": "https://arcticwolf.com/resources/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "ZeroBEC Blog",
+        "url": "https://zerobec.com/feed.xml"
+    },
+    {
+        "name": "hunt.io Threat Research and Product Updates",
+        "url": "https://hunt.io/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "AhnLab",
+        "url": "https://asec.ahnlab.com/en/feed/"
+    },
+    {
+        "name": "catonetworks blog",
+        "url": "https://www.catonetworks.com/blog/feed/"
+    },
+    {
+        "name": "securonix blog",
+        "url": "https://www.securonix.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "zscaler blog",
+        "url": "https://www.zscaler.com/blogs?size=n_8_n&filters%5B0%5D%5Bfield%5D=blog_category.keyword&filters%5B0%5D%5Bvalues%5D%5B0%5D=Security%20Research&filters%5B0%5D%5Btype%5D=any&filters%5B0%5D%5Bpersistent%5D=b_true_b&sort%5B0%5D%5Bfield%5D=created&sort%5B0%5D%5Bdirection%5D=desc",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "splunk blog",
+        "url": "https://www.splunk.com/en_us/blog/security.html",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "trellix blog",
+        "url": "https://www.trellix.com/blogs/l",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "キヤノンITソリューションズ マルウェア情報局",
+        "blog_url": "https://eset-info.canon-its.jp/malware_info/",
+        "url": "https://eset-info.canon-its.jp/rss/data_format=xml"
+    },
+    {
+        "name": "FFRI Security Blog (ＦＦＲＩセキュリティ)",
+        "url": "https://www.ffri.jp/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "三井物産セキュアディレクション (MBSD Security Blog)",
+        "url": "https://www.mbsd.jp/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "MOTEX LANSCOPE エンドポイントセキュリティブログ",
+        "url": "https://www.lanscope.jp/blogs/category/cyber_attack/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "GMOサイバーセキュリティ byイエラエ ブログ",
+        "blog_url": "https://gmo-cybersecurity.com/blog/",
+        "url": "https://gmo-cybersecurity.com/blog/feed/"
+    },
+    {
+        "name": "インテリジェントウェイブ セキュリティブログ (IWI)",
+        "url": "https://www.iwi.co.jp/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "SCSK セキュリティブログ",
+        "blog_url": "https://blog.scsksecurity.co.jp/",
+        "url": "https://blog.scsksecurity.co.jp/rss"
+    },
+    {
+        "name": "サイバーセキュリティクラウド ブログ (CSC)",
+        "blog_url": "https://blog.cscloud.co.jp/",
+        "url": "https://blog.cscloud.co.jp/rss"
+    },
+    {
+        "name": "フューチャーセキュアウェイブ セキュリティブログ",
+        "url": "https://www.securewave.co.jp/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "セキュアイノベーション セキュリティブログ",
+        "url": "https://www.secure-iv.co.jp/siv-blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "網屋 ALog セキュリティコラム",
+        "url": "https://www.amiya.co.jp/column/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "NTT セキュリティナレッジ",
+        "url": "https://jp.security.ntt/insights_resources/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "ペンタセキュリティ 公式ブログ",
+        "blog_url": "https://www.pentasecurity.co.jp/pentapro/archive/category/%E6%8A%80%E8%A1%93%E3%83%96%E3%83%AD%E3%82%B0",
+        "url": "https://www.pentasecurity.co.jp/pentapro/archive/category/%E6%8A%80%E8%A1%93%E3%83%96%E3%83%AD%E3%82%B0/feed"
+    },
+    {
+        "name": "Microsoft Security Blog",
+        "blog_url": "https://www.microsoft.com/en-us/security/blog/",
+        "url": "https://www.microsoft.com/en-us/security/blog/feed/"
+    },
+    {
+        "name": "Microsoft Security Response Center (MSRC Blog)",
+        "url": "https://msrc.microsoft.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Cisco Talos Intelligence Blog",
+        "blog_url": "https://blog.talosintelligence.com/",
+        "url": "https://blog.talosintelligence.com/feed"
+    },
+    {
+        "name": "AWS Security Blog",
+        "blog_url": "https://aws.amazon.com/blogs/security/",
+        "url": "https://aws.amazon.com/blogs/security/feed/"
+    },
+    {
+        "name": "Google Cloud Security Blog",
+        "url": "https://cloud.google.com/blog/products/identity-security",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Google Project Zero",
+        "blog_url": "https://googleprojectzero.blogspot.com/",
+        "url": "https://projectzero.google/feed.xml"
+    },
+    {
+        "name": "GitHub Security Lab Blog",
+        "url": "https://securitylab.github.com/research/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Cloudflare Security Blog",
+        "blog_url": "https://blog.cloudflare.com/tag/security/",
+        "url": "https://blog.cloudflare.com/rss/"
+    },
+    {
+        "name": "Fastly Security Blog",
+        "blog_url": "https://www.fastly.com/blog/category/security",
+        "url": "https://www.fastly.com/blog_rss.xml"
+    },
+    {
+        "name": "Akamai Security Research Blog",
+        "url": "https://feeds.feedburner.com/akamai/blog"
+    },
+    {
+        "name": "Elastic Security Labs",
+        "blog_url": "https://www.elastic.co/security-labs",
+        "url": "https://www.elastic.co/security-labs/rss/feed.xml"
+    },
+    {
+        "name": "Cisco Duo Security Blog",
+        "blog_url": "https://duo.com/blog",
+        "url": "https://duo.com/feed/"
+    },
+    {
+        "name": "F5 Labs Security Research",
+        "url": "https://www.f5.com/labs",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Imperva Threat Research Blog",
+        "blog_url": "https://www.imperva.com/blog/",
+        "url": "https://www.imperva.com/blog/feed/"
+    },
+    {
+        "name": "Mandiant Threat Research Blog",
+        "url": "https://cloud.google.com/blog/topics/threat-intelligence?hl=en",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "SentinelOne SentinelLabs Blog",
+        "blog_url": "https://labs.sentinelone.com/",
+        "url": "https://www.sentinelone.com/labs/feed/"
+    },
+    {
+        "name": "ESET WeLiveSecurity Blog",
+        "blog_url": "https://www.welivesecurity.com/",
+        "url": "https://www.welivesecurity.com/en/rss/feed/"
+    },
+    {
+        "name": "Cybereason Threat Research Blog",
+        "url": "https://www.cybereason.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Deep Instinct Threat Lab Blog",
+        "url": "https://www.deepinstinct.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "WithSecure Labs Blog",
+        "url": "https://labs.withsecure.com/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "F-Secure Official Blog",
+        "url": "https://blog.f-secure.com/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "VIPRE Security Blog",
+        "url": "https://www.vipre.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "ThreatLocker Blog",
+        "blog_url": "https://www.threatlocker.com/blog",
+        "url": "https://www.threatlocker.com/blog/rss.xml"
+    },
+    {
+        "name": "Red Canary Cyber Threat Blog",
+        "url": "https://redcanary.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Huntress Security Blog",
+        "url": "https://www.huntress.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Kroll Cyber Risk Blog",
+        "url": "https://www.kroll.com/en/insights",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Flashpoint Threat Intelligence Blog",
+        "blog_url": "https://flashpoint.io/blog/",
+        "url": "https://flashpoint.io/blog/feed/"
+    },
+    {
+        "name": "GreyNoise Intelligence Blog",
+        "url": "https://www.greynoise.io/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "SonicWall Threat Research Blog",
+        "url": "https://blog.sonicwall.com/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "WatchGuard Security Center Blog",
+        "url": "https://www.watchguard.com/wgrd-news/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Wiz Cloud Security Blog",
+        "url": "https://www.wiz.io/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Orca Security Blog",
+        "url": "https://orca.security/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Aqua Security Blog",
+        "url": "https://blog.aquasec.com/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Netskope Threat Labs Blog",
+        "url": "https://www.netskope.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Salt Security API Security Blog",
+        "url": "https://salt.security/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Traceable AI Blog",
+        "url": "https://www.traceable.ai/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Noname Security Blog",
+        "url": "https://nonamesecurity.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Varonis Data Security Blog",
+        "blog_url": "https://www.varonis.com/blog",
+        "url": "https://www.varonis.com/blog/rss.xml"
+    },
+    {
+        "name": "Chainguard Software Supply Chain Blog",
+        "blog_url": "https://www.chainguard.dev/unchained",
+        "url": "https://www.chainguard.dev/api/rss"
+    },
+    {
+        "name": "Censys Research Blog",
+        "blog_url": "https://censys.io/blog",
+        "url": "https://censys.com/feed/"
+    },
+    {
+        "name": "Bitsight Cyber Risk Blog",
+        "blog_url": "https://www.bitsight.com/blog",
+        "url": "https://www.bitsight.com/blog/rss.xml"
+    },
+    {
+        "name": "SecurityScorecard Blog",
+        "blog_url": "https://securityscorecard.com/blog/",
+        "url": "https://securityscorecard.com/feed/"
+    },
+    {
+        "name": "Dig Security DSPM Blog",
+        "blog_url": "https://www.paloaltonetworks.com/blog/cloud-security/category/dspm/",
+        "url": "https://www.paloaltonetworks.com/blog/cloud-security/category/dspm/feed/"
+    },
+    {
+        "name": "Sweet Security Blog",
+        "blog_url": "https://www.sweet.security/blog",
+        "url": "https://www.sweet.security/blog/rss.xml"
+    },
+    {
+        "name": "CyberArk Cyber Security Blog",
+        "blog_url": "https://www.cyberark.com/resources/blog",
+        "url": "https://www.paloaltonetworks.com/blog/identity-security/feed/"
+    },
+    {
+        "name": "Okta Security Blog",
+        "url": "https://www.okta.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "BeyondTrust Privileged Access Blog",
+        "url": "https://www.beyondtrust.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Silverfort Identity Security Blog",
+        "blog_url": "https://www.silverfort.com/blog/",
+        "url": "https://www.silverfort.com/feed/"
+    },
+    {
+        "name": "Semperis Active Directory Blog",
+        "url": "https://www.semperis.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "JumpCloud IT Security Blog",
+        "blog_url": "https://jumpcloud.com/blog",
+        "url": "https://jumpcloud.com/feed"
+    },
+    {
+        "name": "SailPoint Identity Library Blog",
+        "url": "https://www.sailpoint.com/en/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Ping Identity Resources Blog",
+        "url": "https://www.pingidentity.com/en/resources/blog.html",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Delinea Privileged Access Blog",
+        "blog_url": "https://delinea.com/blog",
+        "url": "https://delinea.com/blog/rss.xml"
+    },
+    {
+        "name": "1Password Security Blog",
+        "blog_url": "https://blog.1password.com/",
+        "url": "https://1password.com/blog/index.xml"
+    },
+    {
+        "name": "Tenable Cyber Exposure Blog",
+        "blog_url": "https://www.tenable.com/blog",
+        "url": "https://feeds.feedburner.com/tenable/qaXL"
+    },
+    {
+        "name": "Snyk Application Security Blog",
+        "blog_url": "https://snyk.io/blog/",
+        "url": "https://snyk.io/blog/feed/"
+    },
+    {
+        "name": "Veracode Application Security Blog",
+        "url": "https://www.veracode.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Checkmarx AppSec Research Blog",
+        "url": "https://checkmarx.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Contrast Security Blog",
+        "blog_url": "https://www.contrastsecurity.com/security-resources",
+        "url": "https://www.contrastsecurity.com/security-influencers/rss.xml"
+    },
+    {
+        "name": "Synopsys Software Integrity Blog",
+        "blog_url": "https://www.synopsys.com/blogs/software-security.html",
+        "url": "https://www.blackduck.com/feed"
+    },
+    {
+        "name": "SonarSource / Sonar Security Blog",
+        "blog_url": "https://www.sonarsource.com/blog/",
+        "url": "https://www.sonarsource.com/rss/blog.xml"
+    },
+    {
+        "name": "Semgrep Static Analysis Blog",
+        "url": "https://semgrep.dev/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Socket Open Source Security Blog",
+        "url": "https://socket.dev/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Dragos OT Cybersecurity Blog",
+        "url": "https://www.dragos.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Claroty Team82 Research Blog",
+        "url": "https://claroty.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Nozomi Networks OT/IoT Blog",
+        "url": "https://www.nozominetworks.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "TXOne Networks Industrial Cybersecurity Blog",
+        "url": "https://www.txone.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Armis Cyber Security Blog",
+        "url": "https://www.armis.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Abnormal Security Blog",
+        "url": "https://abnormalsecurity.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Mimecast Cyber Resilience Blog",
+        "url": "https://www.mimecast.com/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "Barracuda Networks Campus Blog",
+        "url": "https://blog.barracuda.com/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "KnowBe4 Security Awareness Blog",
+        "url": "https://blog.knowbe4.com/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "TrustedSec Red Team & IR Blog",
+        "url": "https://www.trustedsec.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "socradar Blog",
+        "url": "https://socradar.io/blog/",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "darktrace Blog",
+        "url": "https://www.darktrace.com/blog",
+        "watcher": "claude-cowork"
+    },
+    {
+        "name": "expel Blog",
+        "url": "https://expel.com/blog/",
+        "watcher": "claude-cowork"
+    }
+]

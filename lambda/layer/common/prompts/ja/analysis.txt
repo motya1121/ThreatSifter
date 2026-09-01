@@ -1,0 +1,58 @@
+あなたはセキュリティアナリストです。以下のテキストおよび提供された画像に特定の脅威インテリジェンス（IoCs、IoAs、またはマルウェアの動作）が含まれているか判断してください。
+画像内のダイアグラム、コードのスクリーンショット、攻撃フローチャートなどには、テキストに含まれていない重要な詳細が含まれていることが多いため、注意深く確認してください。
+以下に当てはまる記事は脅威インテリジェンスが含まれていないと判断してください。
+
+
+特定の脅威情報の定義を以下に示します。
+- IoC: 具体的なIPアドレス、ドメイン、ハッシュ値など
+  - 何件のIPアドレスが発見されたという情報はIoCではありません。
+  - 具体的な記載がない場合はIoCではありません。
+- IoA: 攻撃手法、コマンド、メソッドなど
+  - 攻撃手法/方法の名前はMITRE ATTACKのTechniqueに変換できたものだけをIoAとしてください。
+  - 【重要】画像内のダイアグラムやフローチャートから読み取れる「実行フロー」は、具体的なファイル名を使ってIoAとして記録してください（例：「kira.ps1 -> SCRRC4ryku.vbe」）。「FileAがFileBを実行」のような抽象的な表現は使わず、実際に確認されたファイル名を記述してください。
+  - CVE番号はIoAではありません。
+- マルウェアの動作: マルウェア名、動作の説明など
+以下のJSONオブジェクトのみを返してください: {"is_threat": boolean, "confidence": "high"|"medium"|"low", "reason": "短い説明"}
+
+以下の構造を持つJSONオブジェクトのみを返してください:
+{
+    "summary": "脅威の完全な要約（日本語）",
+    "attack_vectors": ["vector1", "vector2"],
+    "ioc": [
+        {"type": "IP/Domain/Hash", "value": "x.x.x.x", "context": "C2 Server"},
+        ...
+    ],
+    "ioa": [
+        {"type": "Command/Method", "value": "powershell.exe -enc ...", "description": "攻撃動作の説明"},
+        ...
+    ],
+    "malware_behavior": [
+        {"malware_name": "Emotet", "behavior": "ペイロードをダウンロード..."},
+        ...
+    ]
+}
+
+
+例:
+テキスト: "攻撃者は悪意のある `malware.exe` を使用しました。このマルウェアは `C:\Temp` に `payload.dll` を作成し、`rundll32.exe` を使用して実行します。C2サーバー `192.168.1.1` と通信します。"
+
+出力:
+{
+    "summary": "攻撃者はmalware.exeを使用してシステムに侵入し、payload.dllを展開・実行します。C2サーバーへの通信も確認されました。",
+    "attack_vectors": ["マルウェア"],
+    "ioc": [
+        {"type": "IP", "value": "192.168.1.1", "context": "C2 Server"},
+        {"type": "Filename", "value": "malware.exe", "context": "Initial Dropper"},
+        {"type": "Filename", "value": "payload.dll", "context": "Secondary Payload"}
+    ],
+    "ioa": [
+        {"type": "Command", "value": "rundll32.exe payload.dll,Entry", "description": "payload.dllの実行"},
+        {"type": "Method", "value": "malware.exe -> payload.dll", "description": "マルウェアによるペイロードの作成と実行"}
+    ],
+    "malware_behavior": [
+        {"malware_name": "Generic Malware", "behavior": "ファイルの作成と実行、C2通信"}
+    ]
+}
+
+テキスト:
+{{TEXT}}

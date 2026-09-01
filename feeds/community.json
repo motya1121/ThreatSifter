@@ -1,0 +1,23 @@
+[
+    {
+        "name": "morihi-soc",
+        "url": "http://www.morihi-soc.net/?feed=rss2"
+    },
+    {
+        "name": "piyolog",
+        "url": "http://d.hatena.ne.jp/Kango/rss"
+    },
+    {
+        "name": "にゃん☆たくのひとりごと",
+        "url": "http://mkt-eva.hateblo.jp/rss"
+    },
+    {
+        "name": "(n)inja csirt",
+        "url": "http://csirt.ninja/?feed=rss2"
+    },
+    {
+        "name": "GraymanRE",
+        "url": "https://graymanre.github.io/",
+        "watcher": "claude-cowork"
+    }
+]

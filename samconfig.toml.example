@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "threat-sifter"
+region = "ap-northeast-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
+profile = ""
+image_repositories = ["ViewerFunction="]
+s3_prefix = "threat-sifter"
+parameter_overrides = "SlackTokenParameterName=\"/threat-sifter/slack-token\" TriageModelId=\"jp.amazon.nova-2-lite-v1:0\" AnalysisModelId=\"jp.anthropic.claude-sonnet-4-6\" AlertEmail=\"\" PromptLang=\"ja\" ViewerPasswordParameterName=\"/threat-sifter/viewer-password\" CustomDomainName=\"\""
